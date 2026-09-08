@@ -1,0 +1,6 @@
+{
+  "name": "Mudra Check",
+  "description": "Legal Metrology, Agriculture & Environmental Packaging Compliance Inspection Scanner for Packaged Commodities Rules 2011, Seeds, Fertilizers, and Consumer Products.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
