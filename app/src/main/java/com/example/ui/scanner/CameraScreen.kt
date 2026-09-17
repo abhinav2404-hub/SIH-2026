@@ -9,6 +9,9 @@ import android.graphics.Matrix
 import android.net.Uri
 import android.provider.Settings
 import android.util.Log
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.core.Camera
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
@@ -60,8 +63,10 @@ import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Layers
 import androidx.compose.material.icons.filled.Lightbulb
 import androidx.compose.material.icons.filled.PhotoCamera
+import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Shield
+import com.example.util.ImageBitmapHelper
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -188,6 +193,18 @@ fun CameraScreen(
 
     var cameraProviderInstance by remember { mutableStateOf<ProcessCameraProvider?>(null) }
     val cameraExecutor: Executor = remember { Executors.newSingleThreadExecutor() }
+
+    val galleryPickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickVisualMedia()
+    ) { uri: Uri? ->
+        if (uri != null) {
+            val bitmap = ImageBitmapHelper.decodeSampledBitmapFromUri(context, uri)
+            if (bitmap != null) {
+                HapticFeedbackHelper.vibrateCaptureSuccess(context)
+                onPhotoCaptured(bitmap)
+            }
+        }
+    }
 
     DisposableEffect(lifecycleOwner) {
         onDispose {
@@ -600,6 +617,28 @@ fun CameraScreen(
                                 )
                             }
                         }
+                    }
+
+                    // Gallery Upload Button
+                    IconButton(
+                        onClick = {
+                            HapticFeedbackHelper.vibrateClick(context)
+                            galleryPickerLauncher.launch(
+                                PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                            )
+                        },
+                        modifier = Modifier
+                            .size(46.dp)
+                            .clip(CircleShape)
+                            .background(Color.White.copy(alpha = 0.15f))
+                            .testTag("button_pick_gallery_photo")
+                    ) {
+                        Icon(
+                            Icons.Default.PhotoLibrary,
+                            contentDescription = "Upload from Gallery",
+                            tint = Color.White,
+                            modifier = Modifier.size(22.dp)
+                        )
                     }
 
                     // Toggle Rule Guidance Checklist

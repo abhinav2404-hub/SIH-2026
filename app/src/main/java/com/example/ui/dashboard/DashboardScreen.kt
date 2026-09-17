@@ -1,5 +1,9 @@
 package com.example.ui.dashboard
 
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -33,10 +37,12 @@ import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.CheckCircleOutline
 import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.filled.ErrorOutline
+import androidx.compose.material.icons.filled.FactCheck
 import androidx.compose.material.icons.filled.FlashOn
 import androidx.compose.material.icons.filled.Gavel
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.MenuBook
+import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.material.icons.filled.QrCodeScanner
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Security
@@ -64,6 +70,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -77,6 +84,7 @@ import com.example.ui.MainViewModel
 import com.example.ui.components.AppBottomNavBar
 import com.example.ui.components.AppTopBar
 import com.example.ui.theme.AppFontWeights
+import com.example.util.ImageBitmapHelper
 import com.example.ui.theme.AgriEmerald
 import com.example.ui.theme.AgriForestGreen
 import com.example.ui.theme.AgriHarvestGold
@@ -98,6 +106,18 @@ import java.util.Locale
 
 @Composable
 fun DashboardScreen(viewModel: MainViewModel) {
+    val context = LocalContext.current
+    val dashboardGalleryPicker = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickVisualMedia()
+    ) { uri: Uri? ->
+        if (uri != null) {
+            val bitmap = ImageBitmapHelper.decodeSampledBitmapFromUri(context, uri)
+            if (bitmap != null) {
+                viewModel.analyzeCapturedBitmap(bitmap)
+            }
+        }
+    }
+
     val currentUser by viewModel.currentUser.collectAsState()
     val inspections by viewModel.inspectionHistory.collectAsState()
 
@@ -144,8 +164,90 @@ fun DashboardScreen(viewModel: MainViewModel) {
             // High-Impact Primary Action: Start Scan Banner
             item {
                 PrimaryScannerBanner(
-                    onScanClick = { viewModel.navigateTo(AppScreen.SCANNER) }
+                    onScanClick = { viewModel.navigateTo(AppScreen.SCANNER) },
+                    onUploadClick = {
+                        dashboardGalleryPicker.launch(
+                            PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                        )
+                    }
                 )
+            }
+
+            // Food Label Transparency & QUID Proposal Banner
+            item {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { viewModel.navigateTo(AppScreen.FOOD_TRANSPARENCY) }
+                        .testTag("banner_food_transparency_charter"),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(containerColor = MetrologyNavy),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(44.dp)
+                                .clip(CircleShape)
+                                .background(AgriForestGreen),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                Icons.Default.FactCheck,
+                                contentDescription = null,
+                                tint = Color.White,
+                                modifier = Modifier.size(24.dp)
+                            )
+                        }
+                        Spacer(modifier = Modifier.width(14.dp))
+                        Column(modifier = Modifier.weight(1f)) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text(
+                                    text = "Food Label Transparency",
+                                    style = MaterialTheme.typography.titleSmall.copy(
+                                        fontWeight = AppFontWeights.Header,
+                                        color = Color.White
+                                    )
+                                )
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Surface(
+                                    shape = RoundedCornerShape(6.dp),
+                                    color = AgriSproutMint
+                                ) {
+                                    Text(
+                                        text = "QUID Proposal",
+                                        style = MaterialTheme.typography.labelSmall.copy(
+                                            color = AgriForestGreen,
+                                            fontSize = 9.sp,
+                                            fontWeight = AppFontWeights.Header
+                                        ),
+                                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                    )
+                                }
+                            }
+                            Spacer(modifier = Modifier.height(3.dp))
+                            Text(
+                                text = "7 Core Demands, Palm Oil History, Oil Safety Guide & QUID Simulator",
+                                style = MaterialTheme.typography.bodySmall.copy(
+                                    color = Color(0xFFD8F3DC),
+                                    fontSize = 11.sp,
+                                    lineHeight = 15.sp
+                                )
+                            )
+                        }
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowForward,
+                            contentDescription = null,
+                            tint = Color(0xFFD8F3DC),
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                }
             }
 
             // Statutory Metrics Grid
@@ -542,11 +644,13 @@ fun OfficerBadgeCard(
 }
 
 @Composable
-fun PrimaryScannerBanner(onScanClick: () -> Unit) {
+fun PrimaryScannerBanner(
+    onScanClick: () -> Unit,
+    onUploadClick: () -> Unit
+) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { onScanClick() }
             .testTag("banner_start_scan"),
         shape = RoundedCornerShape(18.dp),
         colors = CardDefaults.cardColors(
@@ -567,66 +671,110 @@ fun PrimaryScannerBanner(onScanClick: () -> Unit) {
                 )
                 .padding(20.dp)
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Surface(
-                        shape = RoundedCornerShape(6.dp),
-                        color = Color(0xFFE2EBD6).copy(alpha = 0.25f),
-                        border = BorderStroke(1.dp, Color(0xFFE2EBD6).copy(alpha = 0.5f))
-                    ) {
+            Column(modifier = Modifier.fillMaxWidth()) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Surface(
+                            shape = RoundedCornerShape(6.dp),
+                            color = Color(0xFFE2EBD6).copy(alpha = 0.25f),
+                            border = BorderStroke(1.dp, Color(0xFFE2EBD6).copy(alpha = 0.5f))
+                        ) {
+                            Text(
+                                text = "AI-POWERED OCR & RULE ENGINE",
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    color = Color(0xFFE2EBD6),
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 9.sp,
+                                    letterSpacing = 0.8.sp
+                                )
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(10.dp))
+
                         Text(
-                            text = "AI-POWERED OCR & RULE ENGINE",
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
-                            style = MaterialTheme.typography.labelSmall.copy(
-                                color = Color(0xFFE2EBD6),
+                            text = "Scan Commodity Label",
+                            style = MaterialTheme.typography.titleLarge.copy(
                                 fontWeight = FontWeight.Bold,
-                                fontSize = 9.sp,
-                                letterSpacing = 0.8.sp
+                                color = Color.White
+                            )
+                        )
+
+                        Spacer(modifier = Modifier.height(2.dp))
+
+                        Text(
+                            text = "Check Rule 6 declarations, MRP, USP, font height & country of origin instantly",
+                            style = MaterialTheme.typography.bodySmall.copy(
+                                color = Color.White.copy(alpha = 0.9f),
+                                fontSize = 12.sp,
+                                lineHeight = 16.sp
                             )
                         )
                     }
 
-                    Spacer(modifier = Modifier.height(10.dp))
+                    Spacer(modifier = Modifier.width(14.dp))
 
-                    Text(
-                        text = "Scan Commodity Label",
-                        style = MaterialTheme.typography.titleLarge.copy(
-                            fontWeight = FontWeight.Bold,
-                            color = Color.White
+                    Box(
+                        modifier = Modifier
+                            .size(52.dp)
+                            .clip(CircleShape)
+                            .background(Color.White)
+                            .clickable { onScanClick() },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            Icons.Default.QrCodeScanner,
+                            contentDescription = "Scan",
+                            tint = MetrologyNavy,
+                            modifier = Modifier.size(28.dp)
                         )
-                    )
-
-                    Spacer(modifier = Modifier.height(2.dp))
-
-                    Text(
-                        text = "Check Rule 6 declarations, MRP, USP, font height & country of origin instantly",
-                        style = MaterialTheme.typography.bodySmall.copy(
-                            color = Color.White.copy(alpha = 0.9f),
-                            fontSize = 12.sp,
-                            lineHeight = 16.sp
-                        )
-                    )
+                    }
                 }
 
-                Spacer(modifier = Modifier.width(14.dp))
+                Spacer(modifier = Modifier.height(14.dp))
 
-                Box(
-                    modifier = Modifier
-                        .size(54.dp)
-                        .clip(CircleShape)
-                        .background(Color.White),
-                    contentAlignment = Alignment.Center
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
-                    Icon(
-                        Icons.Default.QrCodeScanner,
-                        contentDescription = "Scan",
-                        tint = MetrologyNavy,
-                        modifier = Modifier.size(30.dp)
-                    )
+                    Button(
+                        onClick = onScanClick,
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(44.dp)
+                            .testTag("button_dashboard_scan"),
+                        shape = RoundedCornerShape(10.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color.White,
+                            contentColor = Color(0xFF234413)
+                        )
+                    ) {
+                        Icon(Icons.Default.QrCodeScanner, contentDescription = null, modifier = Modifier.size(16.dp))
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text("Live Lens", fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                    }
+
+                    OutlinedButton(
+                        onClick = onUploadClick,
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(44.dp)
+                            .testTag("button_dashboard_gallery"),
+                        shape = RoundedCornerShape(10.dp),
+                        border = BorderStroke(1.dp, Color.White),
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            contentColor = Color.White
+                        )
+                    ) {
+                        Icon(Icons.Default.PhotoLibrary, contentDescription = null, modifier = Modifier.size(16.dp))
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text("Upload Gallery", fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                    }
                 }
             }
         }

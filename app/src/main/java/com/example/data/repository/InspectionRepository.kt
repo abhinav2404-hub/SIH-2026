@@ -49,7 +49,14 @@ class InspectionRepository(private val inspectionDao: InspectionDao) {
                     inspectorBadge = "LMO-HR-2026-0842",
                     inspectionLocation = "Kisan Seva Kendra, Karnal Mandi",
                     officerNotes = "Verified certified bio-fertilizer lot. All statutory metrology marks verified.",
-                    timestamp = System.currentTimeMillis() - 3600000 * 2
+                    timestamp = System.currentTimeMillis() - 3600000 * 2,
+                    expiryDate = "Best before 24 months from mfg (Feb 2028)",
+                    ingredientsList = "Azotobacter, Phosphate Solubilizing Bacteria (PSB), Potash Mobilizing Bacteria (KMB), Carrier-based Peat Material (FCO Standard)",
+                    nutritionalInfo = "Viable count 1x10^7 CFU/g, Organic Carbon 16%, Moisture 35% max",
+                    allergens = "Non-toxic, bio-organic agricultural input. Keep away from direct sunlight.",
+                    batchLotNumber = "KV-NPK-2026-B12",
+                    licenseNumbers = "FCO Lic. No. AGRI/HR/FERT/2024/0088",
+                    rawFullOcrText = "KRISHIVEDA ORGANIC BIO-FERTILIZER. Net Qty: 50kg. MRP: Rs. 1350.00 (incl. of all taxes). USP: Rs. 27/kg. Mfg: 02/2026. Mfd by KrishiVeda Karnal. FCO Lic No: AGRI/HR/FERT/2024/0088. Batch: KV-NPK-2026-B12."
                 ),
                 InspectionRecord(
                     productName = "Desi Gold Pure Mustard Oil (1L)",
@@ -72,7 +79,14 @@ class InspectionRepository(private val inspectionDao: InspectionDao) {
                     inspectorBadge = "LMO-DL-2026-0842",
                     inspectionLocation = "APMC Mandi Yard, Azadpur, Delhi",
                     officerNotes = "Verified standard pack size under Second Schedule. All clear.",
-                    timestamp = System.currentTimeMillis() - 3600000 * 5
+                    timestamp = System.currentTimeMillis() - 3600000 * 5,
+                    expiryDate = "Best before 9 months from packaging (Nov 2026)",
+                    ingredientsList = "100% Pure Cold-Pressed Mustard Oil, Vitamin A & Vitamin D",
+                    nutritionalInfo = "Per 100g: Energy 900 kcal, Fat 100g (Saturated 7g, MUFA 68g, PUFA 25g), Trans Fat 0g",
+                    allergens = "Contains Mustard seeds. Natural pungent aroma.",
+                    batchLotNumber = "DGM-2026-B44",
+                    licenseNumbers = "FSSAI Lic. No. 10018013000842",
+                    rawFullOcrText = "DESI GOLD PURE MUSTARD OIL 1L. MRP: Rs. 185.00 (incl. of all taxes). USP: Rs. 0.185/ml. Pkd: 02/2026. Made in India. Mfd by Desi Gold Agrotech Kota. Care: 1800-180-2244. FSSAI: 10018013000842."
                 ),
                 InspectionRecord(
                     productName = "Hybrid Bt Cotton Seeds (450g Pack)",
@@ -96,7 +110,14 @@ class InspectionRepository(private val inspectionDao: InspectionDao) {
                     inspectionLocation = "APMC Cotton Market, Guntur",
                     officerNotes = "Statutory notice issued to packager under Section 36(1).",
                     timestamp = System.currentTimeMillis() - 3600000 * 18,
-                    noticeGenerated = true
+                    noticeGenerated = true,
+                    expiryDate = "Valid for sowing up to 9 months from test date (Oct 2026)",
+                    ingredientsList = "Certified Hybrid Cotton Seeds (Cry1Ac & Cry2Ab traits), Thiram/Imidacloprid treated",
+                    nutritionalInfo = "Germination Min 75%, Genetic Purity Min 95%, Physical Purity Min 98%",
+                    allergens = "Poison treated seed. Strictly not for food, feed, or oil purposes.",
+                    batchLotNumber = "ATC-BT2-882",
+                    licenseNumbers = "Seeds Act Reg: AP/GNT/SEED/2023/1029",
+                    rawFullOcrText = "AGRITECH HYBRID BT COTTON SEEDS. Net 450g. MRP Rs. 864.00. Packed 01/2026. Mfd by AgriTech Guntur AP. Contact: seeds@agritech.co.in. Treated with poison. Batch: ATC-BT2-882."
                 ),
                 InspectionRecord(
                     productName = "EcoGreen Bio-Degradable Agro Mulching Film (400m)",
@@ -119,7 +140,14 @@ class InspectionRepository(private val inspectionDao: InspectionDao) {
                     inspectorBadge = "LMO-GJ-2026-0955",
                     inspectionLocation = "Agro Distribution Depot, Ahmedabad",
                     officerNotes = "Green certified packaging. Thickness and metric length verified accurately.",
-                    timestamp = System.currentTimeMillis() - 3600000 * 28
+                    timestamp = System.currentTimeMillis() - 3600000 * 28,
+                    expiryDate = "Degradation lifespan 180 days after field application",
+                    ingredientsList = "Corn Starch Polymer, PBAT (Polybutyrate Adipate Terephthalate), UV Stabilizer Masterbatch",
+                    nutritionalInfo = "Film Thickness 25 Microns (Complies with PWM Rules 2021 & ISO 17088)",
+                    allergens = "Non-food agricultural item.",
+                    batchLotNumber = "EGP-SAN-400M-19",
+                    licenseNumbers = "CPCB Reg No: B-29016/(SC)/CPCB/PWM/2022",
+                    rawFullOcrText = "ECOGREEN AGRO MULCH FILM. Net: 400m (12.5kg). MRP: Rs. 2400.00 (incl. of all taxes). USP: Rs. 6/m. Mfd: 02/2026. Sanand Gujarat. CPCB Reg: PWM/2022. Batch: EGP-SAN-400M-19."
                 ),
                 InspectionRecord(
                     productName = "Crunchy Masala Chips (95g)",
@@ -143,7 +171,14 @@ class InspectionRepository(private val inspectionDao: InspectionDao) {
                     inspectionLocation = "Metro Cash & Carry, Mayapuri",
                     officerNotes = "Compound notice issued under Section 36 of Legal Metrology Act, 2009.",
                     timestamp = System.currentTimeMillis() - 3600000 * 36,
-                    noticeGenerated = true
+                    noticeGenerated = true,
+                    expiryDate = "Best before 6 months from packaging (Jul 2026)",
+                    ingredientsList = "Potatoes (62%), Edible Palmolein Oil (32%), Spices & Condiments (Chilli, Onion, Mango powder), Iodized Salt, INS 627, INS 631",
+                    nutritionalInfo = "Per 100g: Energy 542 kcal, Carbs 52.4g, Protein 6.8g, Fat 34.2g (Saturated 15.8g, Trans Fat 0.1g), Sodium 780mg",
+                    allergens = "May contain traces of Gluten, Milk Solids, and Soy.",
+                    batchLotNumber = "TB-CHI-081",
+                    licenseNumbers = "FSSAI Lic. No. 10020051000318",
+                    rawFullOcrText = "CRUNCHY MASALA CHIPS. Net Weight 95g. MRP Rs. 30.00. Mfd 01/2026. Packed by TasteBite Foods Noida UP. For feedback email consumer@tastebite.com. Ingredients: Fresh Potatoes (62%), Edible Palmolein Oil, Spices. Batch: TB-CHI-081."
                 ),
                 InspectionRecord(
                     productName = "Himalayan Herbal Cold-Pressed Neem Oil (500ml)",
@@ -166,7 +201,14 @@ class InspectionRepository(private val inspectionDao: InspectionDao) {
                     inspectorBadge = "LMO-HP-2026-0120",
                     inspectionLocation = "Solan Farmer Market",
                     officerNotes = "Natural organic pesticide pack. Full compliance.",
-                    timestamp = System.currentTimeMillis() - 3600000 * 44
+                    timestamp = System.currentTimeMillis() - 3600000 * 44,
+                    expiryDate = "Best before 24 months from manufacture (Feb 2028)",
+                    ingredientsList = "100% Pure Cold Pressed Azadirachta Indica (Neem) Kernel Oil, Azadirachtin content 3000 PPM",
+                    nutritionalInfo = "Natural Fatty Acids (Oleic 52%, Stearic 18%, Palmitic 15%, Linoleic 10%)",
+                    allergens = "Non-edible oil. Keep out of reach of children. Botanical biopesticide.",
+                    batchLotNumber = "PKT-NM-2026-44",
+                    licenseNumbers = "CIBRC Reg: CIR-64210/2021-Neem(EC)-412",
+                    rawFullOcrText = "PRAKRITI BIO HIMALAYAN NEEM OIL 500ml. MRP: Rs. 240.00 (incl. of all taxes). USP: Rs. 0.48/ml. Pkd: 02/2026. Made in India. Mfd by Prakriti Bio-Extracts Solan HP. CIBRC Reg: CIR-64210. Batch: PKT-NM-2026-44."
                 ),
                 InspectionRecord(
                     productName = "Swiss Artisan Hazelnut Cocoa Spread (350g)",
@@ -190,7 +232,14 @@ class InspectionRepository(private val inspectionDao: InspectionDao) {
                     inspectionLocation = "Supermarket Mall, Saket",
                     officerNotes = "Seizure memo prepared under Rule 32. 48 packs impounded.",
                     timestamp = System.currentTimeMillis() - 3600000 * 56,
-                    noticeGenerated = true
+                    noticeGenerated = true,
+                    expiryDate = "EXP 11/2026 (Best before 12 months)",
+                    ingredientsList = "Sugar, Vegetable Fat (Palm, Shea), Hazelnuts (13%), Skimmed Milk Powder (8.7%), Cocoa Powder (7.4%), Emulsifier: Soy Lecithin, Vanillin",
+                    nutritionalInfo = "Per 100g: Energy 539 kcal, Carbohydrates 57.5g (Sugars 56.3g), Protein 6.3g, Fat 30.9g (Saturated 10.6g), Sodium 42mg",
+                    allergens = "Contains Tree Nuts (Hazelnuts), Milk, Soy.",
+                    batchLotNumber = "LOT: CH-ZR-904",
+                    licenseNumbers = "UNREGISTERED IMPORTER (No FSSAI Import License printed)",
+                    rawFullOcrText = "ALPS ARTISAN HAZELNUT SPREAD 350g. Price: 450 Rs. Mfd by Alps Treats AG Zurich Switzerland. Contact: contact@alps.ch. Lot: CH-ZR-904. Ingredients: Sugar, Hazelnuts 13%, Cocoa 7.4%."
                 )
             )
 

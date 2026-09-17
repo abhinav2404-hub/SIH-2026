@@ -1,5 +1,9 @@
 package com.example.ui.scanner
 
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
@@ -31,7 +35,9 @@ import androidx.compose.material.icons.filled.Agriculture
 import androidx.compose.material.icons.filled.Camera
 import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Eco
+import androidx.compose.material.icons.filled.FactCheck
 import androidx.compose.material.icons.filled.Layers
+import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material.icons.filled.TextFields
@@ -63,6 +69,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -77,10 +84,16 @@ import com.example.ui.components.AppBottomNavBar
 import com.example.ui.components.AppTopBar
 import com.example.ui.theme.AgriEmerald
 import com.example.ui.theme.AgriForestGreen
+import com.example.ui.theme.AgriHarvestGold
 import com.example.ui.theme.AgriLeafGreen
+import com.example.ui.theme.AgriSproutMint
+import com.example.ui.theme.AppFontWeights
+import com.example.ui.theme.BorderLight
 import com.example.ui.theme.ComplianceFail
 import com.example.ui.theme.CompliancePass
 import com.example.ui.theme.ComplianceWarning
+import com.example.ui.theme.MetrologyNavy
+import com.example.util.ImageBitmapHelper
 
 @Composable
 fun ScannerScreen(viewModel: MainViewModel) {
@@ -170,6 +183,12 @@ fun ScannerScreen(viewModel: MainViewModel) {
                         onQuickTest = {
                             val sample = SamplePackagesRepository.samplePackages.first()
                             viewModel.selectSamplePackage(sample)
+                        },
+                        onUploadPhoto = { bitmap ->
+                            viewModel.analyzeCapturedBitmap(bitmap)
+                        },
+                        onOpenTransparency = {
+                            viewModel.navigateTo(AppScreen.FOOD_TRANSPARENCY)
                         }
                     )
                     1 -> BenchmarkSamplesTabContent(
@@ -180,6 +199,9 @@ fun ScannerScreen(viewModel: MainViewModel) {
                     2 -> CustomTextTabContent(
                         onAnalyze = { name, brand, cat, text ->
                             viewModel.analyzeCustomLabelText(name, brand, cat, text)
+                        },
+                        onUploadPhoto = { bitmap ->
+                            viewModel.analyzeCapturedBitmap(bitmap)
                         }
                     )
                 }
@@ -196,8 +218,22 @@ fun ScannerScreen(viewModel: MainViewModel) {
 @Composable
 private fun LiveCameraTabContent(
     onLaunchCamera: () -> Unit,
-    onQuickTest: () -> Unit
+    onQuickTest: () -> Unit,
+    onUploadPhoto: (android.graphics.Bitmap) -> Unit,
+    onOpenTransparency: () -> Unit
 ) {
+    val context = LocalContext.current
+    val photoPickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickVisualMedia()
+    ) { uri: Uri? ->
+        if (uri != null) {
+            val bitmap = ImageBitmapHelper.decodeSampledBitmapFromUri(context, uri)
+            if (bitmap != null) {
+                onUploadPhoto(bitmap)
+            }
+        }
+    }
+
     val scrollState = rememberScrollState()
     val infiniteTransition = rememberInfiniteTransition(label = "scan_laser")
     val laserPosition by infiniteTransition.animateFloat(
@@ -307,23 +343,92 @@ private fun LiveCameraTabContent(
 
         Spacer(modifier = Modifier.height(10.dp))
 
+        // Upload from Gallery Button
+        Button(
+            onClick = {
+                photoPickerLauncher.launch(
+                    PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                )
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(50.dp)
+                .testTag("button_upload_gallery_photo"),
+            shape = RoundedCornerShape(25.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                contentColor = MetrologyNavy
+            ),
+            border = BorderStroke(1.2.dp, AgriEmerald)
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(Icons.Default.PhotoLibrary, contentDescription = null, tint = AgriForestGreen)
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("Upload Photo from Gallery", fontWeight = AppFontWeights.Header, fontSize = 14.sp)
+            }
+        }
+
+        Spacer(modifier = Modifier.height(10.dp))
+
         Button(
             onClick = onQuickTest,
             modifier = Modifier
                 .fillMaxWidth()
-                .height(46.dp)
+                .height(48.dp)
                 .testTag("button_quick_sample_scan"),
-            shape = RoundedCornerShape(23.dp),
+            shape = RoundedCornerShape(24.dp),
             colors = ButtonDefaults.buttonColors(
-                containerColor = MaterialTheme.colorScheme.surfaceVariant,
-                contentColor = MaterialTheme.colorScheme.onSurface
+                containerColor = Color(0xFFFEFCE8),
+                contentColor = Color(0xFF78350F)
             ),
-            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
+            border = BorderStroke(1.5.dp, AgriHarvestGold)
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(Icons.Default.PlayArrow, contentDescription = null, tint = AgriLeafGreen)
+                Icon(Icons.Default.PlayArrow, contentDescription = null, tint = Color(0xFF854D0E))
                 Spacer(modifier = Modifier.width(6.dp))
-                Text("Quick Scan Mustard Oil Benchmark", fontSize = 13.sp)
+                Text("⚡ Quick Scan: Pure Kachi Ghani Mustard Oil (1L)", fontWeight = FontWeight.Bold, fontSize = 13.sp)
+            }
+        }
+
+        Spacer(modifier = Modifier.height(14.dp))
+
+        // Food Label Transparency & QUID Banner Card
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { onOpenTransparency() }
+                .testTag("card_transparency_proposal_banner"),
+            shape = RoundedCornerShape(14.dp),
+            colors = CardDefaults.cardColors(containerColor = MetrologyNavy)
+        ) {
+            Row(
+                modifier = Modifier.padding(14.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    Icons.Default.FactCheck,
+                    contentDescription = null,
+                    tint = AgriSproutMint,
+                    modifier = Modifier.size(28.dp)
+                )
+                Spacer(modifier = Modifier.width(12.dp))
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = "Food Label Transparency & QUID",
+                        style = MaterialTheme.typography.titleSmall.copy(
+                            fontWeight = AppFontWeights.Header,
+                            color = Color.White
+                        )
+                    )
+                    Text(
+                        text = "7 Core Demands, Palm Oil History & QUID Simulator",
+                        style = MaterialTheme.typography.bodySmall.copy(
+                            color = Color(0xFFD8F3DC),
+                            fontSize = 11.sp,
+                            fontWeight = AppFontWeights.Subheader
+                        )
+                    )
+                }
             }
         }
 
@@ -496,14 +601,39 @@ private fun BenchmarkSamplesTabContent(
 
 @Composable
 private fun CustomTextTabContent(
-    onAnalyze: (String, String, String, String) -> Unit
+    onAnalyze: (String, String, String, String) -> Unit,
+    onUploadPhoto: (android.graphics.Bitmap) -> Unit
 ) {
-    var productName by remember { mutableStateOf("KrishiVeda Bio Zinc Fertilizer") }
-    var brandName by remember { mutableStateOf("KrishiVeda Agro") }
-    var category by remember { mutableStateOf("Agri Seeds & Fertilizers") }
+    val context = LocalContext.current
+    val customPhotoPickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickVisualMedia()
+    ) { uri: Uri? ->
+        if (uri != null) {
+            val bitmap = ImageBitmapHelper.decodeSampledBitmapFromUri(context, uri)
+            if (bitmap != null) {
+                onUploadPhoto(bitmap)
+            }
+        }
+    }
+
+    var productName by remember { mutableStateOf("Shri Krishna Pure Kachi Ghani Mustard Oil (1 Litre)") }
+    var brandName by remember { mutableStateOf("KrishiVeda Agro Industries Pvt. Ltd.") }
+    var category by remember { mutableStateOf("Agriculture & Edible Oils") }
     var rawText by remember {
         mutableStateOf(
-            "KRISHIVEDA BIO ZINC FERTILIZER\nNet Weight: 25 kg\nMRP: Rs. 850.00 (incl. of all taxes)\nUSP: Rs. 34.00 / kg\nMfg Date: 02/2026\nManufactured by: KrishiVeda Agro Industries, Karnal, Haryana - 132001\nConsumer Care: care@krishiveda.in / 1800-180-1551\nCountry of Origin: India\nZinc Content: 21% min."
+            """SHRI KRISHNA PURE KACHI GHANI MUSTARD OIL (COLD PRESSED)
+Net Quantity: 1 Litre (910 g)
+MRP: ₹ 185.00 (inclusive of all taxes)
+Unit Sale Price (USP): ₹ 0.185 / ml (₹ 185.00 / L)
+Month & Year of Packing: 02/2026 | Batch No: LOT-DGM-2026-B44
+Best Before: 9 months from packaging date (Use by 11/2026)
+Country of Origin: India (Made in India)
+Manufactured & Packed by: KrishiVeda Agro Mills Ltd, Plot 42, G.T. Road, Karnal, Haryana - 132001
+Consumer Grievance Cell: 1800-180-1551 | care@krishiveda.in
+FSSAI Central License No: 10018013000842 • AGMARK CA-8492 Grade 1
+Ingredients: 100% Pure Cold-Pressed Raw Mustard Seed Extract (Brassica juncea) (99.85%), Fortified with Vitamin A & D2.
+Nutritional Facts (per 100g): Energy 900 kcal, Protein 0g, Total Fat 100g (Saturated 6.8g, MUFA 67.4g, PUFA 25.8g, Trans Fat 0.0g). Free from Argemone & Mineral Oil.
+QR Payload: 010890123456789010DGM2026B44172611302118500"""
         )
     }
 
@@ -516,6 +646,59 @@ private fun CustomTextTabContent(
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
+        // Quick Gallery Label Upload Card
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable {
+                    customPhotoPickerLauncher.launch(
+                        PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                    )
+                }
+                .testTag("card_upload_label_from_gallery_custom_tab"),
+            shape = RoundedCornerShape(12.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+            border = BorderStroke(1.dp, AgriEmerald)
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(14.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clip(CircleShape)
+                        .background(AgriLeafGreen.copy(alpha = 0.15f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        Icons.Default.PhotoLibrary,
+                        contentDescription = null,
+                        tint = AgriLeafGreen,
+                        modifier = Modifier.size(22.dp)
+                    )
+                }
+                Spacer(modifier = Modifier.width(12.dp))
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = "Upload Label Image Instead",
+                        style = MaterialTheme.typography.titleSmall.copy(
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                    )
+                    Text(
+                        text = "Pick a product package photo to auto-extract text & details",
+                        style = MaterialTheme.typography.bodySmall.copy(
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            fontSize = 11.sp
+                        )
+                    )
+                }
+            }
+        }
         OutlinedTextField(
             value = productName,
             onValueChange = { productName = it },

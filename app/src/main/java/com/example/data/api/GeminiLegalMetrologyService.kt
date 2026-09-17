@@ -137,20 +137,26 @@ class GeminiLegalMetrologyService {
 
         if (apiKey.isBlank() || apiKey == "MY_GEMINI_API_KEY") {
             return@withContext ComplianceEngine.analyzeCustomText(
-                productName = "Bio-Organic Mustard Oil & Agri Produce",
-                brandName = "KrishiVeda Agro Industries",
-                category = "Edible Oils & Agri Produce",
+                productName = "Shri Krishna Pure Kachi Ghani Mustard Oil (1 Litre / 910g)",
+                brandName = "KrishiVeda Agro Industries Pvt. Ltd.",
+                category = "Agriculture & Edible Oils (FSSAI 2.2.1 & AGMARK Grade-1)",
                 rawLabelText = """
-                    KRISHIVEDAM KACHI GHANI MUSTARD OIL
-                    Net Qty: 1 Litre (910 g)
-                    MRP Rs. 175.00 (inclusive of all taxes)
-                    Unit Sale Price (USP): Rs. 0.175 / ml
-                    Month & Year of Packing: 02/2026
-                    Country of Origin: India
+                    SHRI KRISHNA PURE KACHI GHANI MUSTARD OIL (COLD PRESSED)
+                    Net Quantity: 1 Litre (910 g)
+                    MRP: ₹ 185.00 (inclusive of all taxes)
+                    Unit Sale Price (USP): ₹ 0.185 / ml (₹ 185.00 / L)
+                    Month & Year of Packing: 02/2026 | Batch No: LOT-DGM-2026-B44
+                    Best Before: 9 months from packaging date (Use by 11/2026)
+                    Country of Origin: India (Made in India)
                     Manufactured & Packed by: KrishiVeda Agro Mills Ltd, Plot 42, G.T. Road, Karnal, Haryana - 132001
-                    Customer Care: care@krishiveda.in | Toll Free: 1800-180-1551
-                    FSSAI Lic No: 10020064001234
-                    Agmark Grade: Standard CA-8492
+                    Consumer Grievance Cell: 1800-180-1551 | care@krishiveda.in
+                    FSSAI Central License No: 10018013000842
+                    AGMARK Certificate of Grading: CA-8492 Grade 1 (Special Mustard Oil)
+                    Ingredients: 100% Pure Cold-Pressed Raw Mustard Seed Extract (Brassica juncea) (99.85%), Fortified with Vitamin A (Retinyl Palmitate, 25 IU/g) and Vitamin D2 (Cholecalciferol, 4.5 IU/g).
+                    Nutritional Facts (per 100g): Energy 900 kcal, Protein 0g, Carbohydrate 0g (Total Sugars 0g), Total Fat 100g (Saturated Fatty Acids 6.8g, MUFA 67.4g, PUFA 25.8g [Omega-3 ALA 12.1g, Omega-6 13.7g], Trans Fat 0.0g), Cholesterol 0mg, Vitamin A 750 mcg RE, Vitamin D 11.25 mcg.
+                    Allergens: Contains Mustard Seeds. Free from Argemone Oil, Mineral Oil, Castor Oil, Adulterants or Artificial Colors.
+                    Chemical Authenticity Parameters: Acid Value 1.15 mg KOH/g (Limit <= 1.50), Iodine Value 104.2 (Limit 98-110), Refractive Index at 40°C 1.4655 (Standard 1.4646-1.4662), Saponification Value 174.5, Natural Allyl Isothiocyanate 0.34% (Standard >= 0.20%), Argemone / Mineral Oil: NEGATIVE.
+                    QR Payload: 010890123456789010DGM2026B44172611302118500
                 """.trimIndent(),
                 inspectorName = inspectorName,
                 inspectorBadge = inspectorBadge,
@@ -164,22 +170,27 @@ class GeminiLegalMetrologyService {
             val base64Image = Base64.encodeToString(outputStream.toByteArray(), Base64.NO_WRAP)
 
             val prompt = """
-                You are a senior Legal Metrology Enforcement Officer under the Ministry of Consumer Affairs, Food & Public Distribution, Government of India.
-                Analyze this captured image of a product label under Legal Metrology (Packaged Commodities) Rules, 2011 (PCR, 2011).
+                You are a senior Legal Metrology & Food Safety Enforcement Officer under the Ministry of Consumer Affairs, Food & Public Distribution, and FSSAI, Government of India.
+                Analyze this captured image of a product label package in exhaustive, forensic detail. Extract all text and every small detail printed on the package.
                 
-                Carefully extract and verify all mandatory label declarations:
-                1. Rule 6(1)(a): Complete Name and Address of Manufacturer / Packer / Importer
-                2. Rule 6(1)(b): Generic or Common Name of commodity
-                3. Rule 6(1)(c): Net quantity in standard metric units (g, kg, ml, l)
-                4. Rule 6(1)(d): Month & Year of packing/manufacture
-                5. Rule 6(1)(da): Maximum Retail Price (MRP) explicitly stating 'inclusive of all taxes'
-                6. Rule 6(1)(e): Unit Sale Price (USP)
-                7. Rule 6(1)(f): Country of Origin (Made in India / Imported from)
-                8. Rule 6(1)(g): Consumer Care contact (Email, Phone/Toll-Free, Address)
-                9. Rule 8: Principal Display Panel layout and visibility
-                10. Rule 9 / Schedule II: Minimum font height compliance
+                Please transcribe and explicitly extract:
+                1. Product Name & Brand Name
+                2. Maximum Retail Price (MRP) - note exact printed text and whether 'inclusive of all taxes' / 'incl. of all taxes' is present
+                3. Expiry Date / Best Before Date / Use By Date (exact phrasing and timeframe)
+                4. Ingredients List (full comprehensive list in descending order of weight, including any QUID percentages, INS numbers, additives, flavorings, preservative codes)
+                5. Net Quantity / Net Weight / Net Volume (with exact metric units)
+                6. Unit Sale Price (USP) (e.g., Rs. / g, Rs. / ml, Rs. / kg)
+                7. Month & Year of Packing / Manufacture (Mfg Date, Pkd Date)
+                8. Batch Number / Lot Number / Code
+                9. Complete Name and Physical Registered Address of Manufacturer / Packer / Marketer / Importer
+                10. Country of Origin (e.g., Made in India / Imported from)
+                11. Consumer Care / Grievance Redressal details (Phone / Toll-free, Email address, postal contact)
+                12. FSSAI License Number / AGMARK / CIBRC / BIS Certification numbers
+                13. Nutritional Information per 100g / per serve (Energy kcal, Protein, Carbohydrates, Total Sugars, Added Sugars, Total Fat, Saturated Fat, Trans Fat, Sodium, etc.)
+                14. Allergen Information / Warning Advice (e.g., Contains Nuts, Gluten, Milk, Soy)
+                15. Storage instructions, usage directions, and barcode numbers if visible
                 
-                Please transcribe the complete text visible on the package label and summarize any rule discrepancies found.
+                Transcribe the full raw text visible on the package label so no detail is lost, and note any statutory compliance violations under Legal Metrology Rules 2011 and FSSAI Regulations.
             """.trimIndent()
 
             val request = GeminiRequest(

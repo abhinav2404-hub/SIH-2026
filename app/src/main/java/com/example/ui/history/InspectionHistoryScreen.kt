@@ -519,25 +519,39 @@ private fun InspectionRecordCard(
 
                     Column {
                         Text(
-                            text = "UNIT SALE PRICE (USP)",
+                            text = "EXPIRY / USE BY",
                             style = MaterialTheme.typography.labelSmall.copy(
                                 fontSize = 9.sp,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         )
                         Text(
-                            text = record.declaredUsp,
+                            text = if (record.expiryDate.isNotBlank()) record.expiryDate else record.mfgPackingDate,
                             style = MaterialTheme.typography.bodySmall.copy(
                                 fontWeight = FontWeight.Bold,
-                                color = if (record.declaredUsp.contains("Missing", ignoreCase = true)) ComplianceFail else AgriLeafGreen
-                            )
+                                color = AgriLeafGreen
+                            ),
+                            maxLines = 1
                         )
                     }
                 }
             }
 
+            if (record.ingredientsList.isNotBlank()) {
+                Spacer(modifier = Modifier.height(6.dp))
+                Text(
+                    text = "Ingredients: ${record.ingredientsList}",
+                    style = MaterialTheme.typography.bodySmall.copy(
+                        fontSize = 11.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        lineHeight = 15.sp
+                    ),
+                    maxLines = 2
+                )
+            }
+
             if (record.ruleViolationsSummary.isNotBlank()) {
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(6.dp))
                 Text(
                     text = record.ruleViolationsSummary,
                     style = MaterialTheme.typography.bodySmall.copy(

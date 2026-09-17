@@ -7,7 +7,9 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Matrix
 import android.util.Log
+import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.core.Camera
 import androidx.camera.core.CameraSelector
@@ -45,6 +47,7 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.FlashOff
 import androidx.compose.material.icons.filled.FlashOn
 import androidx.compose.material.icons.filled.PhotoCamera
+import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -90,6 +93,7 @@ import com.example.ui.theme.AgriSage
 import com.example.ui.theme.AgriSproutMint
 import com.example.ui.theme.BorderLight
 import com.example.util.HapticFeedbackHelper
+import com.example.util.ImageBitmapHelper
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.util.concurrent.Executor
@@ -124,6 +128,17 @@ fun CameraCaptureInterface(
     LaunchedEffect(Unit) {
         if (!hasCameraPermission) {
             permissionLauncher.launch(Manifest.permission.CAMERA)
+        }
+    }
+
+    val galleryPickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickVisualMedia()
+    ) { uri: Uri? ->
+        if (uri != null) {
+            val bitmap = ImageBitmapHelper.decodeSampledBitmapFromUri(context, uri)
+            if (bitmap != null) {
+                onPhotoCaptured(bitmap)
+            }
         }
     }
 
@@ -469,20 +484,27 @@ fun CameraCaptureInterface(
                         }
                     }
 
-                    // Help / Legal Standard Icon
-                    Surface(
-                        shape = RoundedCornerShape(12.dp),
-                        color = Color.White.copy(alpha = 0.15f),
-                        modifier = Modifier.size(48.dp)
-                    ) {
-                        Box(contentAlignment = Alignment.Center) {
-                            Icon(
-                                Icons.Default.Shield,
-                                contentDescription = "Legal Standard",
-                                tint = Color(0xFFE9C46A),
-                                modifier = Modifier.size(24.dp)
+                    // Open Gallery Photo Picker Icon
+                    IconButton(
+                        onClick = {
+                            HapticFeedbackHelper.vibrateClick(context)
+                            galleryPickerLauncher.launch(
+                                PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
                             )
-                        }
+                        },
+                        modifier = Modifier
+                            .size(48.dp)
+                            .clip(CircleShape)
+                            .background(Color.White.copy(alpha = 0.15f))
+                            .border(1.dp, Color(0xFF52B788), CircleShape)
+                            .testTag("button_camera_gallery_picker")
+                    ) {
+                        Icon(
+                            Icons.Default.PhotoLibrary,
+                            contentDescription = "Pick Label Photo from Gallery",
+                            tint = Color(0xFF52B788),
+                            modifier = Modifier.size(24.dp)
+                        )
                     }
                 }
             }
@@ -552,7 +574,30 @@ fun CameraCaptureInterface(
                     Text("Grant Camera Access", fontWeight = FontWeight.Bold)
                 }
 
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(10.dp))
+
+                Button(
+                    onClick = {
+                        galleryPickerLauncher.launch(
+                            PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                        )
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(50.dp)
+                        .testTag("button_fallback_pick_gallery_photo"),
+                    shape = RoundedCornerShape(25.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color.White,
+                        contentColor = AgriForestGreen
+                    )
+                ) {
+                    Icon(Icons.Default.PhotoLibrary, contentDescription = null, modifier = Modifier.size(20.dp))
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Upload Label from Gallery", fontWeight = FontWeight.Bold)
+                }
+
+                Spacer(modifier = Modifier.height(10.dp))
 
                 Button(
                     onClick = onClose,

@@ -43,7 +43,8 @@ enum class AppScreen {
     NOTICE_VIEW,
     TOOLS,
     RULE_GUIDE,
-    HELP_SEARCH
+    HELP_SEARCH,
+    FOOD_TRANSPARENCY
 }
 
 enum class ThemeMode {

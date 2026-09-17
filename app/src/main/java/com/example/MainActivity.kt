@@ -25,6 +25,7 @@ import com.example.ui.scanner.CameraScreen
 import com.example.ui.scanner.ScannerScreen
 import com.example.ui.theme.LegalMetrologyTheme
 import com.example.ui.tools.LegalMetrologyToolsScreen
+import com.example.ui.transparency.FoodTransparencyScreen
 
 class MainActivity : ComponentActivity() {
     private val viewModel: MainViewModel by viewModels()
@@ -66,6 +67,7 @@ fun LegalMetrologyApp(viewModel: MainViewModel) {
         AppScreen.TOOLS -> LegalMetrologyToolsScreen(viewModel = viewModel)
         AppScreen.RULE_GUIDE -> LegalMetrologyGuideScreen(viewModel = viewModel)
         AppScreen.HELP_SEARCH -> LegalMetrologyHelpScreen(viewModel = viewModel)
+        AppScreen.FOOD_TRANSPARENCY -> FoodTransparencyScreen(viewModel = viewModel)
         else -> DashboardScreen(viewModel = viewModel)
     }
 }

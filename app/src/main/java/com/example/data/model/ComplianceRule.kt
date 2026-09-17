@@ -45,5 +45,14 @@ data class SamplePackage(
     val expectedStatus: InspectionStatus,
     val rawLabelText: String,
     val description: String,
-    val violationSummary: String
+    val violationSummary: String,
+    val ingredients: String = "",
+    val nutritionalInfo: String = "",
+    val allergens: String = "",
+    val batchNo: String = "",
+    val licenseNo: String = "",
+    val qrCodeData: String = "",
+    val chemicalSpecs: String = "",
+    val quidDetails: String = "",
+    val foplWarning: String = ""
 )

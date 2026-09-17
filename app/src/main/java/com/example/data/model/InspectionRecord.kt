@@ -29,5 +29,16 @@ data class InspectionRecord(
     val inspectionLocation: String = "Central Verification Unit, New Delhi",
     val officerNotes: String = "",
     val timestamp: Long = System.currentTimeMillis(),
-    val noticeGenerated: Boolean = false
+    val noticeGenerated: Boolean = false,
+    val expiryDate: String = "",
+    val ingredientsList: String = "",
+    val nutritionalInfo: String = "",
+    val allergens: String = "",
+    val batchLotNumber: String = "",
+    val licenseNumbers: String = "",
+    val qrCodeData: String = "",
+    val chemicalSpecs: String = "",
+    val quidDetails: String = "",
+    val foplWarning: String = "",
+    val rawFullOcrText: String = ""
 )
