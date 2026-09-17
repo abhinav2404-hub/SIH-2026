@@ -6,7 +6,7 @@
  
 Point the app's camera at a product label, and it uses Google's **Gemini API** to read and analyze the packaging text and layout, then flags whether required disclosures — MRP, net quantity, manufacturer details, date of manufacture, consumer care details, and more — are present and correctly formatted.
  
-This repository was generated from the [google-gemini/aistudio-repository-template](https://github.com/google-gemini/aistudio-repository-template) and is built with **Kotlin** and **Jetpack Compose**.
+ Itis built with **Kotlin** and **Jetpack Compose**.
  
 ## ✨ Features
  
