@@ -13,6 +13,12 @@ interface InspectionDao {
     @Query("SELECT * FROM inspection_records ORDER BY timestamp DESC")
     fun getAllInspections(): Flow<List<InspectionRecord>>
 
+    @Query("SELECT * FROM inspection_records ORDER BY timestamp DESC")
+    suspend fun getAllRecordsList(): List<InspectionRecord>
+
+    @Update
+    suspend fun updateRecord(record: InspectionRecord)
+
     @Query("SELECT * FROM inspection_records WHERE id = :id")
     fun getInspectionById(id: Long): Flow<InspectionRecord?>
 
@@ -36,4 +42,7 @@ interface InspectionDao {
 
     @Query("SELECT COUNT(*) FROM inspection_records")
     suspend fun getCount(): Int
+
+    @Query("SELECT COUNT(*) FROM inspection_records WHERE productName = :name")
+    suspend fun getCountByProductName(name: String): Int
 }

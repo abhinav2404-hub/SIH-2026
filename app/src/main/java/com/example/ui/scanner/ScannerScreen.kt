@@ -31,11 +31,11 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.FactCheck
 import androidx.compose.material.icons.filled.Agriculture
 import androidx.compose.material.icons.filled.Camera
 import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Eco
-import androidx.compose.material.icons.filled.FactCheck
 import androidx.compose.material.icons.filled.Layers
 import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.material.icons.filled.PlayArrow
@@ -157,22 +157,22 @@ fun ScannerScreen(viewModel: MainViewModel) {
                     Tab(
                         selected = selectedTab == 0,
                         onClick = { selectedTab = 0 },
-                        text = { Text("Live CameraX", fontWeight = FontWeight.Bold, fontSize = 12.sp) },
-                        icon = { Icon(Icons.Default.CameraAlt, contentDescription = null, modifier = Modifier.size(18.dp)) },
+                        text = { Text("Camera Scan", fontWeight = FontWeight.Bold, fontSize = 12.sp) },
+                        icon = { Icon(Icons.Default.CameraAlt, contentDescription = "Camera Scan: Take Photo", modifier = Modifier.size(18.dp)) },
                         modifier = Modifier.testTag("tab_live_camerax")
                     )
                     Tab(
                         selected = selectedTab == 1,
                         onClick = { selectedTab = 1 },
-                        text = { Text("Agri Samples", fontWeight = FontWeight.Bold, fontSize = 12.sp) },
-                        icon = { Icon(Icons.Default.Layers, contentDescription = null, modifier = Modifier.size(18.dp)) },
+                        text = { Text("Example Packs", fontWeight = FontWeight.Bold, fontSize = 12.sp) },
+                        icon = { Icon(Icons.Default.Layers, contentDescription = "Example Packs: Test Samples", modifier = Modifier.size(18.dp)) },
                         modifier = Modifier.testTag("tab_sample_packages")
                     )
                     Tab(
                         selected = selectedTab == 2,
                         onClick = { selectedTab = 2 },
-                        text = { Text("Manual Text", fontWeight = FontWeight.Bold, fontSize = 12.sp) },
-                        icon = { Icon(Icons.Default.TextFields, contentDescription = null, modifier = Modifier.size(18.dp)) },
+                        text = { Text("Type / Paste", fontWeight = FontWeight.Bold, fontSize = 12.sp) },
+                        icon = { Icon(Icons.Default.TextFields, contentDescription = "Type or Paste Label Text", modifier = Modifier.size(18.dp)) },
                         modifier = Modifier.testTag("tab_custom_ocr")
                     )
                 }
@@ -299,7 +299,7 @@ private fun LiveCameraTabContent(
                 Spacer(modifier = Modifier.height(14.dp))
 
                 Text(
-                    text = "Tap to Launch CameraX Live Lens",
+                    text = "Tap to Open Camera & Take Photo",
                     style = MaterialTheme.typography.titleMedium.copy(
                         fontWeight = FontWeight.Bold,
                         color = Color.White
@@ -309,7 +309,7 @@ private fun LiveCameraTabContent(
                 Spacer(modifier = Modifier.height(4.dp))
 
                 Text(
-                    text = "Position fertilizer sacks, seed packs, or edible oil bottles inside the Rule 8 Principal Display Panel target.",
+                    text = "Hold your phone 15-20cm away from the packet. Keep MRP, Net Weight, Expiry date, and ingredients in clear view.",
                     style = MaterialTheme.typography.bodySmall.copy(
                         color = Color(0xFFD8F3DC),
                         fontSize = 11.sp,
@@ -335,9 +335,9 @@ private fun LiveCameraTabContent(
             )
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(Icons.Default.Camera, contentDescription = null)
+                Icon(Icons.Default.CameraAlt, contentDescription = null)
                 Spacer(modifier = Modifier.width(8.dp))
-                Text("Open CameraX Lens", fontWeight = FontWeight.Bold)
+                Text("Open Camera • Take Photo", fontWeight = FontWeight.Bold)
             }
         }
 
@@ -364,7 +364,7 @@ private fun LiveCameraTabContent(
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(Icons.Default.PhotoLibrary, contentDescription = null, tint = AgriForestGreen)
                 Spacer(modifier = Modifier.width(8.dp))
-                Text("Upload Photo from Gallery", fontWeight = AppFontWeights.Header, fontSize = 14.sp)
+                Text("Choose Photo from Gallery", fontWeight = AppFontWeights.Header, fontSize = 14.sp)
             }
         }
 
@@ -406,8 +406,8 @@ private fun LiveCameraTabContent(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Icon(
-                    Icons.Default.FactCheck,
-                    contentDescription = null,
+                    Icons.AutoMirrored.Filled.FactCheck,
+                    contentDescription = "Food Label Compliance Proposal",
                     tint = AgriSproutMint,
                     modifier = Modifier.size(28.dp)
                 )
@@ -702,7 +702,7 @@ QR Payload: 010890123456789010DGM2026B44172611302118500"""
         OutlinedTextField(
             value = productName,
             onValueChange = { productName = it },
-            label = { Text("Product Name") },
+            label = { Text("Product Name (e.g. Pure Mustard Oil, Biscuits)") },
             modifier = Modifier.fillMaxWidth().testTag("input_custom_product_name"),
             shape = RoundedCornerShape(10.dp)
         )
@@ -710,7 +710,7 @@ QR Payload: 010890123456789010DGM2026B44172611302118500"""
         OutlinedTextField(
             value = brandName,
             onValueChange = { brandName = it },
-            label = { Text("Brand / Manufacturer") },
+            label = { Text("Brand / Company Name (Who makes it)") },
             modifier = Modifier.fillMaxWidth().testTag("input_custom_brand"),
             shape = RoundedCornerShape(10.dp)
         )
@@ -718,7 +718,7 @@ QR Payload: 010890123456789010DGM2026B44172611302118500"""
         OutlinedTextField(
             value = category,
             onValueChange = { category = it },
-            label = { Text("Commodity Category") },
+            label = { Text("Product Category (e.g. Edible Oil, Seeds, Food)") },
             modifier = Modifier.fillMaxWidth().testTag("input_custom_category"),
             shape = RoundedCornerShape(10.dp)
         )
@@ -726,7 +726,7 @@ QR Payload: 010890123456789010DGM2026B44172611302118500"""
         OutlinedTextField(
             value = rawText,
             onValueChange = { rawText = it },
-            label = { Text("Raw Package Label Text (OCR Output)") },
+            label = { Text("Label Text (Paste words from box or type printed text)") },
             modifier = Modifier
                 .fillMaxWidth()
                 .height(140.dp)
@@ -748,7 +748,7 @@ QR Payload: 010890123456789010DGM2026B44172611302118500"""
                 contentColor = Color.White
             )
         ) {
-            Text("Analyze Compliance Under Rules 6, 8, 9", fontWeight = FontWeight.Bold)
+            Text("Check Package Now • Verify 7 Legal Rules", fontWeight = FontWeight.Bold)
         }
     }
 }

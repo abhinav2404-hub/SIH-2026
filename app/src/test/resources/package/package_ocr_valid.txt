@@ -1,0 +1,35 @@
+TEST BRAND
+TEST BISCUITS
+
+MRP ₹20.00
+INCLUSIVE OF ALL TAXES
+
+NET QUANTITY 100 g
+
+BATCH NO: BATCH-A100
+
+PKD: 30/08/2026
+BEST BEFORE: 4 MONTHS FROM PACKAGING
+
+INGREDIENTS:
+Wheat Flour, Sugar, Vegetable Oil, Milk Solids,
+Salt, Raising Agents
+
+NUTRITION INFORMATION
+Serving Size: 25 g
+
+Energy: 120 kcal
+Protein: 2 g
+Carbohydrate: 18 g
+Total Sugars: 7 g
+Added Sugars: 6 g
+Total Fat: 5 g
+Saturated Fat: 2 g
+Trans Fat: 0 g
+Sodium: 80 mg
+
+FSSAI LICENCE NO: TEST1234567890
+
+MANUFACTURED BY:
+Test Foods Pvt Ltd
+India

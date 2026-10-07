@@ -1,0 +1,13 @@
+{
+  "productName": "Test Biscuits",
+  "mrp": {
+    "value": "₹20",
+    "source": "PACKAGE_OCR",
+    "confidence": "HIGH"
+  },
+  "expiry": {
+    "value": "28/12/2026",
+    "source": "PACKAGE_OCR",
+    "confidence": "HIGH"
+  }
+}

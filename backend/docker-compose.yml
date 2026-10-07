@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  api:
+    build: .
+    container_name: mudra_check_api
+    restart: always
+    ports:
+      - "5000:5000"
+    environment:
+      - NODE_ENV=development
+      - PORT=5000
+      - MONGODB_URI=mongodb://mongo:27017/mudra_check
+      - JWT_SECRET=mudra_check_secure_jwt_secret_token_2026_xyz
+      - JWT_REFRESH_SECRET=mudra_check_secure_refresh_secret_2026_abc
+      - API_KEY=MUDRA_INSPECTOR_LIVE_KEY_8842
+      - CORS_ORIGIN=*
+    depends_on:
+      - mongo
+    networks:
+      - mudra-net
+
+  mongo:
+    image: mongo:6.0
+    container_name: mudra_check_mongo
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - mudra-net
+
+volumes:
+  mongo_data:
+
+networks:
+  mudra-net:
+    driver: bridge

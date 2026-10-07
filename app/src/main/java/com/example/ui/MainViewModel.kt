@@ -11,17 +11,29 @@ import com.example.data.auth.OfficerRole
 import com.example.data.auth.OfficerUser
 import com.example.data.auth.PhoneNumberAuthCredential
 import com.example.data.db.AppDatabase
+import com.example.data.engine.AuditReportGenerator
+import com.example.data.engine.RulesetComplianceEngine
 import com.example.data.locale.AppLanguage
 import com.example.data.locale.AppStrings
+import com.example.data.model.GlobalComplianceResult
 import com.example.data.model.InspectionRecord
 import com.example.data.model.MetrologyRuleEntity
 import com.example.data.model.RuleCheckResult
 import com.example.data.model.SamplePackage
+import com.example.data.model.SyncQueueEntity
+import com.example.data.di.DatabaseModule
+import com.example.data.local.ProductEntity
+import com.example.data.local.ScanEntity
 import com.example.data.repository.InspectionRepository
 import com.example.data.repository.MetrologyRuleRepository
+import com.example.data.ruleset.RegulatoryRuleset
+import com.example.data.ruleset.RulesetRegistry
 import com.example.data.scanner.ComplianceEngine
 import com.example.data.scanner.SamplePackagesRepository
+import com.example.data.sync.NetworkConnectivityObserver
+import com.example.data.sync.SyncManager
 import com.example.util.HapticFeedbackHelper
+import java.util.UUID
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -35,6 +47,7 @@ import kotlinx.coroutines.launch
 enum class AppScreen {
     LOGIN,
     OTP_VERIFY,
+    ONBOARDING,
     DASHBOARD,
     SCANNER,
     CAMERA,
@@ -44,7 +57,11 @@ enum class AppScreen {
     TOOLS,
     RULE_GUIDE,
     HELP_SEARCH,
-    FOOD_TRANSPARENCY
+    FOOD_TRANSPARENCY,
+    OFFLINE_QUEUE,
+    SYSTEM_HEALTH,
+    SYNTHETIC_TESTS,
+    SETTINGS
 }
 
 enum class ThemeMode {
@@ -59,6 +76,9 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     private val database = AppDatabase.getDatabase(application)
     private val repository = InspectionRepository(database.inspectionDao())
     val ruleRepository = MetrologyRuleRepository(database.metrologyRuleDao())
+    private val syncQueueDao = database.syncQueueDao()
+    private val scanRepository = DatabaseModule.provideScanRepository(application)
+    private val syncRepository = DatabaseModule.provideSyncRepository(application)
     private val geminiService = GeminiLegalMetrologyService()
 
     val currentUser: StateFlow<OfficerUser?> = authManager.currentUser
@@ -66,6 +86,36 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     private val _currentScreen = MutableStateFlow(AppScreen.LOGIN)
     val currentScreen: StateFlow<AppScreen> = _currentScreen.asStateFlow()
+
+    // Active Regulatory Ruleset (India PCR 2011 default, dynamic globally)
+    private val _activeRuleset = MutableStateFlow(RulesetRegistry.INDIA_PCR_2011)
+    val activeRuleset: StateFlow<RegulatoryRuleset> = _activeRuleset.asStateFlow()
+
+    // Offline Mode Toggle (For Airplane Mode testing & Demo)
+    private val _isOfflineMode = MutableStateFlow(false)
+    val isOfflineMode: StateFlow<Boolean> = _isOfflineMode.asStateFlow()
+
+    init {
+        viewModelScope.launch {
+            NetworkConnectivityObserver(application).isConnectedFlow.collect { isConnected ->
+                if (isConnected && !_isOfflineMode.value) {
+                    syncRepository.syncPendingScans()
+                    SyncManager.triggerImmediateSync(getApplication())
+                }
+            }
+        }
+    }
+
+    // Offline Sync Queue Stream
+    val offlineQueueCount: StateFlow<Int> = syncQueueDao.getPendingCountFlow()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
+
+    val offlineQueueItems: StateFlow<List<SyncQueueEntity>> = syncQueueDao.getAllQueueItemsFlow()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    // Standardized Global Compliance Output
+    private val _latestGlobalResult = MutableStateFlow<GlobalComplianceResult?>(null)
+    val latestGlobalResult: StateFlow<GlobalComplianceResult?> = _latestGlobalResult.asStateFlow()
 
     // Localization & Theme
     private val _currentLanguage = MutableStateFlow(AppLanguage.ENGLISH)
@@ -148,12 +198,16 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         _statusFilter,
         _categoryFilter
     ) { list, query, status, category ->
-        list.filter { item ->
+        list.sortedByDescending { it.timestamp }.filter { item ->
             val matchesQuery = query.isBlank() ||
                     item.productName.contains(query, ignoreCase = true) ||
                     item.brandName.contains(query, ignoreCase = true) ||
                     item.barcode.contains(query, ignoreCase = true) ||
-                    item.category.contains(query, ignoreCase = true)
+                    item.category.contains(query, ignoreCase = true) ||
+                    item.inspectorName.contains(query, ignoreCase = true) ||
+                    item.inspectionLocation.contains(query, ignoreCase = true) ||
+                    item.batchLotNumber.contains(query, ignoreCase = true) ||
+                    item.manufacturerAddress.contains(query, ignoreCase = true)
 
             val matchesStatus = when (status) {
                 "COMPLIANT" -> item.overallStatus == "COMPLIANT"
@@ -163,10 +217,30 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             }
 
             val matchesCategory = when (category) {
-                "AGRI" -> item.category.contains("Seed", ignoreCase = true) || item.category.contains("Fertilizer", ignoreCase = true)
-                "OILS" -> item.category.contains("Oil", ignoreCase = true) || item.category.contains("Ghee", ignoreCase = true)
-                "FOOD" -> item.category.contains("Food", ignoreCase = true) || item.category.contains("Snack", ignoreCase = true) || item.category.contains("Beverage", ignoreCase = true)
-                "ECO" -> item.category.contains("Environmental", ignoreCase = true) || item.category.contains("Farm", ignoreCase = true)
+                "AGRI" -> item.category.contains("Seed", ignoreCase = true) ||
+                        item.category.contains("Fertiliz", ignoreCase = true) ||
+                        item.category.contains("Pesticid", ignoreCase = true) ||
+                        item.category.contains("Crop", ignoreCase = true) ||
+                        item.category.contains("Agri", ignoreCase = true) ||
+                        item.category.contains("Soil", ignoreCase = true) ||
+                        item.category.contains("Farm", ignoreCase = true)
+                "OILS" -> item.category.contains("Oil", ignoreCase = true) ||
+                        item.category.contains("Ghee", ignoreCase = true) ||
+                        item.category.contains("Butter", ignoreCase = true) ||
+                        item.category.contains("Fat", ignoreCase = true) ||
+                        item.category.contains("Dairy", ignoreCase = true)
+                "FOOD" -> item.category.contains("Food", ignoreCase = true) ||
+                        item.category.contains("Snack", ignoreCase = true) ||
+                        item.category.contains("Beverage", ignoreCase = true) ||
+                        item.category.contains("Grain", ignoreCase = true) ||
+                        item.category.contains("Pulse", ignoreCase = true) ||
+                        item.category.contains("Flour", ignoreCase = true) ||
+                        item.category.contains("Packag", ignoreCase = true) ||
+                        item.category.contains("Spice", ignoreCase = true)
+                "ECO" -> item.category.contains("Eco", ignoreCase = true) ||
+                        item.category.contains("Environ", ignoreCase = true) ||
+                        item.category.contains("Bio", ignoreCase = true) ||
+                        item.category.contains("Organ", ignoreCase = true)
                 else -> true
             }
 
@@ -361,6 +435,67 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         analyzeCapturedBitmap(bitmap)
     }
 
+    // Ruleset Switching
+    fun setRuleset(rulesetId: String) {
+        val ruleset = RulesetRegistry.getRuleset(rulesetId)
+        _activeRuleset.value = ruleset
+    }
+
+    fun setActiveRuleset(rulesetId: String) {
+        setRuleset(rulesetId)
+    }
+
+    fun setOfficerRole(role: OfficerRole) {
+        setLoginRole(role)
+    }
+
+    // Toggle Offline Mode
+    fun toggleOfflineMode() {
+        setOfflineMode(!_isOfflineMode.value)
+    }
+
+    fun setOfflineMode(enabled: Boolean) {
+        _isOfflineMode.value = enabled
+        if (!enabled) {
+            triggerBackgroundSync()
+        }
+    }
+
+    // WorkManager Sync Trigger
+    fun triggerBackgroundSync() {
+        viewModelScope.launch {
+            SyncManager.triggerImmediateSync(getApplication())
+            syncRepository.syncPendingScans()
+        }
+    }
+
+    fun clearSyncedQueue() {
+        viewModelScope.launch {
+            syncQueueDao.clearSynced()
+        }
+    }
+
+    // Generate Audit Reports
+    fun getAuditReportJson(): String {
+        val current = _latestGlobalResult.value
+        return if (current != null) {
+            AuditReportGenerator.generateJsonReport(current)
+        } else {
+            "{ \"error\": \"No active inspection available for audit export.\" }"
+        }
+    }
+
+    fun getAuditReportText(): String {
+        val current = _latestGlobalResult.value ?: return "No inspection record available."
+        val officer = currentUser.value
+        return AuditReportGenerator.generateTextSummaryReport(
+            result = current,
+            inspectorName = officer?.name ?: "Legal Metrology Officer",
+            inspectorBadge = officer?.officerId ?: "LMO-DL-2026-0842",
+            location = officer?.jurisdiction ?: "Central Enforcement Wing"
+        )
+    }
+
     // Scanning & Compliance Evaluation
     fun selectSamplePackage(sample: SamplePackage) {
         _selectedSample.value = sample
@@ -372,7 +507,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             _isAnalyzing.value = true
             _currentScreen.value = AppScreen.SCANNER
-            _analysisStep.value = "Evaluating statutory compliance (Legal Metrology Rules, 2011)..."
+            val activeRule = _activeRuleset.value
+            _analysisStep.value = "Evaluating statutory compliance (${activeRule.rulesetId})..."
 
             val officer = currentUser.value
             val inspectorName = officer?.name ?: "Inspector R. K. Verma"
@@ -386,12 +522,82 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 location = location
             )
 
+            // Evaluate dynamically via RulesetComplianceEngine
+            val globalResult = RulesetComplianceEngine.evaluate(
+                scanId = record.sampleId ?: UUID.randomUUID().toString(),
+                rulesetId = activeRule.rulesetId,
+                productName = sample.title,
+                brand = sample.brand,
+                manufacturer = sample.manufacturer,
+                importer = "",
+                mrpValue = sample.declaredMrp.replace(Regex("[^0-9.]"), "").toDoubleOrNull() ?: 100.0,
+                currency = activeRule.currency,
+                isInclusiveTaxes = true,
+                netQtyValue = sample.netQuantity.replace(Regex("[^0-9.]"), "").toDoubleOrNull() ?: 500.0,
+                netQtyUnit = if (sample.netQuantity.lowercase().contains("kg")) "kg" else if (sample.netQuantity.lowercase().contains("l")) "L" else "g",
+                mfgDate = sample.mfgDate,
+                expiryDate = sample.expiryDate,
+                bestBefore = sample.expiryDate,
+                batchNumber = sample.batchNo,
+                ingredients = listOf(sample.ingredients),
+                allergens = listOf(sample.allergens),
+                countryOfOrigin = sample.countryOfOrigin,
+                customerCare = sample.consumerCare,
+                measuredFontHeightMm = sample.fontHeightMm,
+                barcode = sample.id,
+                qrData = sample.qrCodeData,
+                rawOcrText = "${sample.title} MRP ${sample.declaredMrp} Net Qty: ${sample.netQuantity} USP: ${sample.declaredUsp} Mfd by: ${sample.manufacturer} Batch: ${sample.batchNo}",
+                captureMode = if (_isOfflineMode.value) "QUEUED_OFFLINE" else "ONLINE",
+                syncStatus = if (_isOfflineMode.value) "PENDING" else "SYNCED",
+                locale = activeRule.languages.firstOrNull() ?: "en-IN"
+            )
+
+            _latestGlobalResult.value = globalResult
+
             val savedId = repository.insertInspection(record)
             _currentInspectionRecord.value = record.copy(id = savedId)
             _currentRuleResults.value = rules
+
+            val scanEntity = ScanEntity(
+                scanId = globalResult.scanId,
+                productId = record.barcode.ifBlank { UUID.randomUUID().toString() },
+                timestamp = record.timestamp,
+                rulesetId = activeRule.rulesetId,
+                overallStatus = record.overallStatus,
+                complianceScore = record.complianceScore,
+                rawOcrText = record.rawFullOcrText,
+                inspectorBadge = record.inspectorBadge,
+                inspectorNotes = record.officerNotes,
+                syncStatus = if (_isOfflineMode.value) "PENDING" else "SYNCED",
+                violationsCount = record.violationsCount
+            )
+            val productEntity = ProductEntity(
+                productId = scanEntity.productId ?: UUID.randomUUID().toString(),
+                barcode = record.barcode,
+                brand = record.brandName,
+                name = record.productName,
+                category = record.category,
+                mrpDeclared = record.declaredMrp.replace(Regex("[^0-9.]"), "").toDoubleOrNull() ?: 0.0,
+                netQuantityDeclared = record.netQuantity
+            )
+            scanRepository.saveScanTransaction(scanEntity, productEntity, emptyList())
+
+            // Handle offline queue if offline mode active
+            if (_isOfflineMode.value) {
+                syncQueueDao.insert(
+                    SyncQueueEntity(
+                        scanId = globalResult.scanId,
+                        rulesetId = activeRule.rulesetId,
+                        payloadJson = AuditReportGenerator.generateJsonReport(globalResult),
+                        status = "PENDING"
+                    )
+                )
+            } else {
+                syncRepository.syncPendingScans()
+            }
+
             _isAnalyzing.value = false
             HapticFeedbackHelper.vibrateAiProcessingComplete(getApplication())
-            // Render the LCP verdict and score card immediately with zero delay
             _currentScreen.value = AppScreen.ANALYSIS_RESULT
         }
     }
@@ -402,7 +608,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             _isAnalyzing.value = true
             _currentScreen.value = AppScreen.SCANNER
-            _analysisStep.value = "Multimodal AI parsing mandatory declarations against Legal Metrology Rules..."
+            val activeRule = _activeRuleset.value
+            _analysisStep.value = "Multimodal AI parsing mandatory declarations against ${activeRule.rulesetId}..."
 
             val officer = currentUser.value
             val inspectorName = officer?.name ?: "Inspector R. K. Verma"
@@ -416,9 +623,78 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 location = location
             )
 
+            val globalResult = RulesetComplianceEngine.evaluate(
+                scanId = UUID.randomUUID().toString(),
+                rulesetId = activeRule.rulesetId,
+                productName = record.productName,
+                brand = record.brandName,
+                manufacturer = record.manufacturerAddress,
+                importer = "",
+                mrpValue = record.declaredMrp.replace(Regex("[^0-9.]"), "").toDoubleOrNull() ?: 185.0,
+                currency = activeRule.currency,
+                isInclusiveTaxes = true,
+                netQtyValue = record.netQuantity.replace(Regex("[^0-9.]"), "").toDoubleOrNull() ?: 1000.0,
+                netQtyUnit = if (record.netQuantity.lowercase().contains("kg")) "kg" else if (record.netQuantity.lowercase().contains("l")) "L" else "g",
+                mfgDate = record.mfgPackingDate,
+                expiryDate = record.expiryDate,
+                bestBefore = record.expiryDate,
+                batchNumber = record.batchLotNumber,
+                ingredients = listOf(record.ingredientsList),
+                allergens = listOf(record.allergens),
+                countryOfOrigin = record.countryOfOrigin,
+                customerCare = record.consumerCareContact,
+                measuredFontHeightMm = 3.5,
+                barcode = record.barcode,
+                qrData = record.qrCodeData,
+                rawOcrText = record.rawFullOcrText,
+                captureMode = if (_isOfflineMode.value) "QUEUED_OFFLINE" else "ONLINE",
+                syncStatus = if (_isOfflineMode.value) "PENDING" else "SYNCED",
+                locale = activeRule.languages.firstOrNull() ?: "en-IN"
+            )
+
+            _latestGlobalResult.value = globalResult
+
             val savedId = repository.insertInspection(record)
             _currentInspectionRecord.value = record.copy(id = savedId)
             _currentRuleResults.value = rules
+
+            val scanEntity = ScanEntity(
+                scanId = globalResult.scanId,
+                productId = record.barcode.ifBlank { UUID.randomUUID().toString() },
+                timestamp = record.timestamp,
+                rulesetId = activeRule.rulesetId,
+                overallStatus = record.overallStatus,
+                complianceScore = record.complianceScore,
+                rawOcrText = record.rawFullOcrText,
+                inspectorBadge = record.inspectorBadge,
+                inspectorNotes = record.officerNotes,
+                syncStatus = if (_isOfflineMode.value) "PENDING" else "SYNCED",
+                violationsCount = record.violationsCount
+            )
+            val productEntity = ProductEntity(
+                productId = scanEntity.productId ?: UUID.randomUUID().toString(),
+                barcode = record.barcode,
+                brand = record.brandName,
+                name = record.productName,
+                category = record.category,
+                mrpDeclared = record.declaredMrp.replace(Regex("[^0-9.]"), "").toDoubleOrNull() ?: 0.0,
+                netQuantityDeclared = record.netQuantity
+            )
+            scanRepository.saveScanTransaction(scanEntity, productEntity, emptyList())
+
+            if (_isOfflineMode.value) {
+                syncQueueDao.insert(
+                    SyncQueueEntity(
+                        scanId = globalResult.scanId,
+                        rulesetId = activeRule.rulesetId,
+                        payloadJson = AuditReportGenerator.generateJsonReport(globalResult),
+                        status = "PENDING"
+                    )
+                )
+            } else {
+                syncRepository.syncPendingScans()
+            }
+
             _isAnalyzing.value = false
             HapticFeedbackHelper.vibrateAiProcessingComplete(getApplication())
             _currentScreen.value = AppScreen.ANALYSIS_RESULT
@@ -446,9 +722,78 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 location = location
             )
 
+            val activeRule = _activeRuleset.value
+            val globalResult = RulesetComplianceEngine.evaluate(
+                scanId = UUID.randomUUID().toString(),
+                rulesetId = activeRule.rulesetId,
+                productName = record.productName,
+                brand = record.brandName,
+                manufacturer = record.manufacturerAddress,
+                importer = "",
+                mrpValue = record.declaredMrp.replace(Regex("[^0-9.]"), "").toDoubleOrNull() ?: 100.0,
+                currency = activeRule.currency,
+                isInclusiveTaxes = true,
+                netQtyValue = record.netQuantity.replace(Regex("[^0-9.]"), "").toDoubleOrNull() ?: 500.0,
+                netQtyUnit = if (record.netQuantity.lowercase().contains("kg")) "kg" else if (record.netQuantity.lowercase().contains("l")) "L" else "g",
+                mfgDate = record.mfgPackingDate,
+                expiryDate = record.expiryDate,
+                bestBefore = record.expiryDate,
+                batchNumber = record.batchLotNumber,
+                ingredients = listOf(record.ingredientsList),
+                allergens = listOf(record.allergens),
+                countryOfOrigin = record.countryOfOrigin,
+                customerCare = record.consumerCareContact,
+                measuredFontHeightMm = 3.5,
+                barcode = record.barcode,
+                qrData = record.qrCodeData,
+                rawOcrText = record.rawFullOcrText.ifBlank { rawText },
+                captureMode = if (_isOfflineMode.value) "QUEUED_OFFLINE" else "ONLINE",
+                syncStatus = if (_isOfflineMode.value) "PENDING" else "SYNCED",
+                locale = activeRule.languages.firstOrNull() ?: "en-IN"
+            )
+
+            _latestGlobalResult.value = globalResult
+
             val savedId = repository.insertInspection(record)
             _currentInspectionRecord.value = record.copy(id = savedId)
             _currentRuleResults.value = rules
+
+            val scanEntity = ScanEntity(
+                scanId = globalResult.scanId,
+                productId = record.barcode.ifBlank { UUID.randomUUID().toString() },
+                timestamp = record.timestamp,
+                rulesetId = activeRule.rulesetId,
+                overallStatus = record.overallStatus,
+                complianceScore = record.complianceScore,
+                rawOcrText = record.rawFullOcrText.ifBlank { rawText },
+                inspectorBadge = record.inspectorBadge,
+                inspectorNotes = record.officerNotes,
+                syncStatus = if (_isOfflineMode.value) "PENDING" else "SYNCED",
+                violationsCount = record.violationsCount
+            )
+            val productEntity = ProductEntity(
+                productId = scanEntity.productId ?: UUID.randomUUID().toString(),
+                barcode = record.barcode,
+                brand = record.brandName,
+                name = record.productName,
+                category = record.category,
+                mrpDeclared = record.declaredMrp.replace(Regex("[^0-9.]"), "").toDoubleOrNull() ?: 0.0,
+                netQuantityDeclared = record.netQuantity
+            )
+            scanRepository.saveScanTransaction(scanEntity, productEntity, emptyList())
+
+            if (_isOfflineMode.value) {
+                syncQueueDao.insert(
+                    SyncQueueEntity(
+                        scanId = globalResult.scanId,
+                        rulesetId = activeRule.rulesetId,
+                        payloadJson = AuditReportGenerator.generateJsonReport(globalResult),
+                        status = "PENDING"
+                    )
+                )
+            } else {
+                syncRepository.syncPendingScans()
+            }
             _isAnalyzing.value = false
             HapticFeedbackHelper.vibrateAiProcessingComplete(getApplication())
             _currentScreen.value = AppScreen.ANALYSIS_RESULT
@@ -457,6 +802,38 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     fun openExistingRecord(record: InspectionRecord) {
         _currentInspectionRecord.value = record
+        val activeRule = _activeRuleset.value
+
+        val globalResult = RulesetComplianceEngine.evaluate(
+            scanId = record.sampleId ?: record.id.toString(),
+            rulesetId = activeRule.rulesetId,
+            productName = record.productName,
+            brand = record.brandName,
+            manufacturer = record.manufacturerAddress,
+            importer = "",
+            mrpValue = record.declaredMrp.replace(Regex("[^0-9.]"), "").toDoubleOrNull() ?: 100.0,
+            currency = activeRule.currency,
+            isInclusiveTaxes = true,
+            netQtyValue = record.netQuantity.replace(Regex("[^0-9.]"), "").toDoubleOrNull() ?: 500.0,
+            netQtyUnit = if (record.netQuantity.lowercase().contains("kg")) "kg" else if (record.netQuantity.lowercase().contains("l")) "L" else "g",
+            mfgDate = record.mfgPackingDate,
+            expiryDate = record.expiryDate,
+            bestBefore = record.expiryDate,
+            batchNumber = record.batchLotNumber,
+            ingredients = if (record.quidDetails.isNotBlank()) listOf(record.quidDetails) else emptyList(),
+            allergens = if (record.allergens.isNotBlank()) listOf(record.allergens) else emptyList(),
+            countryOfOrigin = record.countryOfOrigin,
+            customerCare = record.consumerCareContact,
+            measuredFontHeightMm = 3.5,
+            barcode = record.barcode,
+            qrData = record.qrCodeData,
+            rawOcrText = "${record.productName} MRP: ${record.declaredMrp} Net Qty: ${record.netQuantity} USP: ${record.declaredUsp} Origin: ${record.countryOfOrigin} Mfd by: ${record.manufacturerAddress}",
+            captureMode = "HISTORICAL_RECORD",
+            syncStatus = "SYNCED",
+            locale = activeRule.languages.firstOrNull() ?: "en-IN"
+        )
+        _latestGlobalResult.value = globalResult
+
         val (_, rules) = ComplianceEngine.analyzeCustomText(
             productName = record.productName,
             brandName = record.brandName,
@@ -468,6 +845,12 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         )
         _currentRuleResults.value = rules
         _currentScreen.value = AppScreen.ANALYSIS_RESULT
+    }
+
+    fun clearAllFilters() {
+        _searchQuery.value = ""
+        _statusFilter.value = "ALL"
+        _categoryFilter.value = "ALL"
     }
 
     fun markNoticeGenerated() {

@@ -3,6 +3,6 @@
     <item
         android:width="66dp"
         android:height="66dp"
-        android:drawable="@drawable/mudra_check_icon_1788095214194"
+        android:drawable="@drawable/ic_mudracheck_foreground"
         android:gravity="center" />
 </layer-list>

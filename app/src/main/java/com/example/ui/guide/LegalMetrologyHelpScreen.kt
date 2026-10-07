@@ -50,6 +50,7 @@ import androidx.compose.material.icons.filled.Public
 import androidx.compose.material.icons.filled.Science
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Shield
+import androidx.compose.material.icons.filled.SmartToy
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -120,21 +121,21 @@ fun LegalMetrologyHelpScreen(viewModel: MainViewModel) {
 
     val quickQuestions = remember {
         listOf(
-            "Seeds Act 1966 & Seed labelling requirements (germination %, pure seed %, poison tag)" to "SEEDS_ACT",
-            "Fertilizer Control Order (FCO) 1985 bag markings & NPK standards" to "FERTILIZER_FCO",
-            "Legal Metrology PCR 2011 Rule 6 mandatory declarations (MRP, USP, Net Qty)" to "LEGAL_METROLOGY",
-            "Rule 8 Principal Display Panel (PDP) dimensions & Schedule II minimum font height" to "PDP_FONT",
-            "Agricultural & Institutional bulk package exemptions under Rule 26" to "LEGAL_METROLOGY",
-            "Insecticides Rules 1971 toxicity color diamond square warning codes" to "PESTICIDES",
-            "Legal Metrology Act 2009 Section 36 penalties and compounding fees" to "LEGAL_METROLOGY"
+            "🌱 Seed Quality: Purity %, germination rate & poison tag warning rules (Seeds Act)" to "SEEDS_ACT",
+            "🧪 Fertilizer Bags: Required NPK ratio & genuine bag markings (FCO Order)" to "FERTILIZER_FCO",
+            "🏷️ 7 Required Label Details: MRP, Net Weight, Dates & Manufacturer (Rule 6)" to "LEGAL_METROLOGY",
+            "🔍 Text Size Rules: How big must price & expiry text be printed? (Schedule II)" to "PDP_FONT",
+            "🌾 Large Farm Bags (Bulk): Rules & exceptions for packages over 25kg (Rule 26)" to "LEGAL_METROLOGY",
+            "☠️ Pesticide Warning Badges: Red, Yellow, Blue, Green poison diamond codes" to "PESTICIDES",
+            "⚖️ Fines & Penalties: What are the fines for overcharging or fake labels? (Sec 36)" to "LEGAL_METROLOGY"
         )
     }
 
     Scaffold(
         topBar = {
             AppTopBar(
-                title = "Statutory Reference & Rules Help",
-                subtitle = "Google Search Grounded Knowledge Center",
+                title = "AI Guide & Rules Helper",
+                subtitle = "Ask questions about food safety & packaging",
                 showBackButton = true,
                 onBackClick = { viewModel.navigateTo(AppScreen.DASHBOARD) },
                 currentUser = currentUser
@@ -188,7 +189,7 @@ fun LegalMetrologyHelpScreen(viewModel: MainViewModel) {
                                     )
                                     Spacer(modifier = Modifier.width(6.dp))
                                     Text(
-                                        "Room DB Rules (6, 8, 9)",
+                                        "Rules Handbook",
                                         fontSize = 12.sp,
                                         fontWeight = FontWeight.Medium
                                     )
@@ -201,14 +202,14 @@ fun LegalMetrologyHelpScreen(viewModel: MainViewModel) {
                             text = {
                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                     Icon(
-                                        Icons.Default.AutoAwesome,
+                                        Icons.Default.SmartToy,
                                         contentDescription = null,
                                         modifier = Modifier.size(16.dp),
                                         tint = AgriEmerald
                                     )
                                     Spacer(modifier = Modifier.width(6.dp))
                                     Text(
-                                        "AI Search Grounding Help",
+                                        "Ask AI Helper",
                                         fontSize = 12.sp,
                                         fontWeight = FontWeight.Bold,
                                         color = AgriForestGreen

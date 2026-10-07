@@ -26,6 +26,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.FactCheck
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.CheckCircle
@@ -105,6 +106,8 @@ fun AnalysisResultScreen(viewModel: MainViewModel) {
     val record by viewModel.currentInspectionRecord.collectAsState()
     val ruleResults by viewModel.currentRuleResults.collectAsState()
     val currentUser by viewModel.currentUser.collectAsState()
+    val activeRuleset by viewModel.activeRuleset.collectAsState()
+    val globalResult by viewModel.latestGlobalResult.collectAsState()
     val context = LocalContext.current
 
     var showNoticeDialog by remember { mutableStateOf(false) }
@@ -125,17 +128,17 @@ fun AnalysisResultScreen(viewModel: MainViewModel) {
     }
 
     val statusTitle = when (record?.overallStatus) {
-        "COMPLIANT" -> "100% STATUTORY COMPLIANCE"
-        "MINOR_VIOLATIONS" -> "MINOR NON-COMPLIANCE"
-        "NON_COMPLIANT" -> "STATUTORY OFFENSE / VIOLATIONS FLAGGED"
-        else -> "SEIZURE & PROSECUTION RECOMMENDED"
+        "COMPLIANT" -> "✅ All Good • 100% Legal & Safe"
+        "MINOR_VIOLATIONS" -> "⚠️ Warning • Minor Label Issues"
+        "NON_COMPLIANT" -> "❌ Illegal • Rule Violation Found"
+        else -> "🚨 Fake or Serious Violation"
     }
 
     Scaffold(
         topBar = {
             AppTopBar(
-                title = "Statutory Audit Report",
-                subtitle = "SIH 2026 Judicial Legal Metrology Assessment",
+                title = "Package Inspection Report",
+                subtitle = "Legal Metrology & Consumer Protection Audit",
                 showBackButton = true,
                 onBackClick = { viewModel.navigateTo(AppScreen.SCANNER) },
                 currentUser = currentUser
@@ -525,7 +528,7 @@ fun AnalysisResultScreen(viewModel: MainViewModel) {
                             .padding(14.dp)
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(Icons.Default.FactCheck, contentDescription = null, tint = MetrologyNavy, modifier = Modifier.size(18.dp))
+                            Icon(Icons.AutoMirrored.Filled.FactCheck, contentDescription = "Legal Metrology Declarations Check", tint = MetrologyNavy, modifier = Modifier.size(18.dp))
                             Spacer(modifier = Modifier.width(6.dp))
                             Text(
                                 text = "Legal Metrology Declarations (PCR 2011, Rule 6)",
@@ -537,13 +540,13 @@ fun AnalysisResultScreen(viewModel: MainViewModel) {
                         }
                         Spacer(modifier = Modifier.height(8.dp))
 
-                        MandatoryFieldRow("Declared Net Quantity", rec.netQuantity)
-                        MandatoryFieldRow("Declared MRP", rec.declaredMrp)
-                        MandatoryFieldRow("Unit Sale Price (USP)", rec.declaredUsp)
-                        MandatoryFieldRow("Month & Year of Packing", rec.mfgPackingDate)
-                        MandatoryFieldRow("Country of Origin", rec.countryOfOrigin)
-                        MandatoryFieldRow("Manufacturer / Packer", rec.manufacturerAddress)
-                        MandatoryFieldRow("Consumer Grievance Care", rec.consumerCareContact)
+                        MandatoryFieldRow("Weight / Quantity", rec.netQuantity)
+                        MandatoryFieldRow("Maximum Price (MRP)", rec.declaredMrp)
+                        MandatoryFieldRow("Price per 100g / 100ml", rec.declaredUsp)
+                        MandatoryFieldRow("Date of Packing", rec.mfgPackingDate)
+                        MandatoryFieldRow("Country where Made", rec.countryOfOrigin)
+                        MandatoryFieldRow("Made / Packed By", rec.manufacturerAddress)
+                        MandatoryFieldRow("Customer Care / Complaints", rec.consumerCareContact)
                     }
                 }
             }
@@ -736,6 +739,129 @@ fun AnalysisResultScreen(viewModel: MainViewModel) {
                 RuleResultItemCard(rule = rule)
             }
 
+            // Global AI Compliance Telemetry & Audit Report Export Card
+            item {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(14.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceVariant
+                    ),
+                    border = BorderStroke(1.dp, BorderLight)
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text(text = activeRuleset.flagEmoji, fontSize = 20.sp)
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Column {
+                                    Text(
+                                        text = "Ruleset Engine: ${activeRuleset.rulesetId}",
+                                        style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold)
+                                    )
+                                    Text(
+                                        text = "Jurisdiction: ${activeRuleset.countryName} (${activeRuleset.currencySymbol})",
+                                        style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp),
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+                            }
+
+                            globalResult?.let { res ->
+                                Surface(
+                                    shape = RoundedCornerShape(6.dp),
+                                    color = when (res.overallStatus) {
+                                        "PASS" -> CompliancePass
+                                        "FAIL" -> ComplianceFail
+                                        else -> ComplianceWarning
+                                    }
+                                ) {
+                                    Text(
+                                        text = res.overallStatus,
+                                        color = Color.White,
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 11.sp,
+                                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
+                                    )
+                                }
+                            }
+                        }
+
+                        HorizontalDivider()
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(
+                                text = "Confidence Score: ${globalResult?.confidenceScore ?: 92}%",
+                                style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.SemiBold)
+                            )
+                            Text(
+                                text = "Mode: ${globalResult?.captureMode ?: "ONLINE"} | Sync: ${globalResult?.syncStatus ?: "SYNCED"}",
+                                style = MaterialTheme.typography.bodySmall.copy(
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    fontSize = 11.sp
+                                )
+                            )
+                        }
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            Button(
+                                onClick = {
+                                    val json = viewModel.getAuditReportJson()
+                                    val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                                    val clip = ClipData.newPlainText("Audit JSON", json)
+                                    clipboard.setPrimaryClip(clip)
+                                    Toast.makeText(context, "Standard JSON schema report copied to clipboard", Toast.LENGTH_LONG).show()
+                                },
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .testTag("export_audit_json_btn"),
+                                shape = RoundedCornerShape(10.dp),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = MaterialTheme.colorScheme.primary
+                                )
+                            ) {
+                                Icon(Icons.Default.ContentCopy, contentDescription = null, modifier = Modifier.size(16.dp))
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text("Export JSON", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                            }
+
+                            OutlinedButton(
+                                onClick = {
+                                    val textReport = viewModel.getAuditReportText()
+                                    val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                                    val clip = ClipData.newPlainText("Official Audit Report", textReport)
+                                    clipboard.setPrimaryClip(clip)
+                                    Toast.makeText(context, "Official statutory summary copied to clipboard", Toast.LENGTH_LONG).show()
+                                },
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .testTag("export_audit_text_btn"),
+                                shape = RoundedCornerShape(10.dp)
+                            ) {
+                                Icon(Icons.Default.Share, contentDescription = null, modifier = Modifier.size(16.dp))
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text("Export Summary", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                            }
+                        }
+                    }
+                }
+            }
+
             // Action Buttons Card: Notice Generation & Audit Registry
             item {
                 Card(
@@ -789,7 +915,7 @@ fun AnalysisResultScreen(viewModel: MainViewModel) {
                             ) {
                                 Icon(Icons.Default.Print, contentDescription = null, modifier = Modifier.size(16.dp))
                                 Spacer(modifier = Modifier.width(6.dp))
-                                Text("Generate Memo", fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                                Text("Create Legal Notice", fontWeight = FontWeight.Bold, fontSize = 12.sp)
                             }
 
                             OutlinedButton(
@@ -807,7 +933,7 @@ fun AnalysisResultScreen(viewModel: MainViewModel) {
                             ) {
                                 Icon(Icons.Default.History, contentDescription = null, modifier = Modifier.size(16.dp))
                                 Spacer(modifier = Modifier.width(6.dp))
-                                Text("View Registry", fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                                Text("Saved Scans History", fontWeight = FontWeight.Bold, fontSize = 12.sp)
                             }
                         }
                     }

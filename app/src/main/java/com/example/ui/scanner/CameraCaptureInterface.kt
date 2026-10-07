@@ -131,6 +131,17 @@ fun CameraCaptureInterface(
         }
     }
 
+    DisposableEffect(lifecycleOwner) {
+        onDispose {
+            try {
+                val cameraProvider = ProcessCameraProvider.getInstance(context).get()
+                cameraProvider.unbindAll()
+            } catch (e: Exception) {
+                Log.e("CameraCaptureInterface", "Error unbinding camera on dispose", e)
+            }
+        }
+    }
+
     val galleryPickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickVisualMedia()
     ) { uri: Uri? ->
@@ -161,6 +172,7 @@ fun CameraCaptureInterface(
                 modifier = Modifier.fillMaxSize(),
                 factory = { ctx ->
                     val previewView = PreviewView(ctx).apply {
+                        implementationMode = PreviewView.ImplementationMode.COMPATIBLE
                         scaleType = PreviewView.ScaleType.FILL_CENTER
                     }
 

@@ -21,20 +21,27 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ReceiptLong
 import androidx.compose.material.icons.filled.Agriculture
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.DeleteOutline
 import androidx.compose.material.icons.filled.Eco
+import androidx.compose.material.icons.filled.FilterAlt
 import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.LocalOffer
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.QrCodeScanner
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.ReportProblem
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FilterChip
@@ -44,6 +51,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
@@ -52,6 +60,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -89,6 +100,51 @@ fun InspectionHistoryScreen(viewModel: MainViewModel) {
     val categoryFilter by viewModel.categoryFilter.collectAsState()
     val currentUser by viewModel.currentUser.collectAsState()
 
+    var recordToDelete by remember { mutableStateOf<InspectionRecord?>(null) }
+
+    // Delete Confirmation Dialog for friendly user protection
+    if (recordToDelete != null) {
+        AlertDialog(
+            onDismissRequest = { recordToDelete = null },
+            icon = {
+                Icon(
+                    imageVector = Icons.Default.DeleteOutline,
+                    contentDescription = "Delete Record",
+                    tint = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.size(28.dp)
+                )
+            },
+            title = {
+                Text(
+                    text = "Delete Inspection Record?",
+                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                )
+            },
+            text = {
+                Text(
+                    text = "Are you sure you want to remove '${recordToDelete?.productName}' from your history? This action cannot be undone.",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        recordToDelete?.let { viewModel.deleteRecord(it.id) }
+                        recordToDelete = null
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                ) {
+                    Text("Delete")
+                }
+            },
+            dismissButton = {
+                OutlinedButton(onClick = { recordToDelete = null }) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
+
     Scaffold(
         topBar = {
             AppTopBar(
@@ -112,7 +168,7 @@ fun InspectionHistoryScreen(viewModel: MainViewModel) {
                 contentColor = Color.White,
                 modifier = Modifier.testTag("fab_scan_from_history")
             ) {
-                Icon(Icons.Default.QrCodeScanner, contentDescription = "Scan New Package")
+                Icon(Icons.Default.QrCodeScanner, contentDescription = "Scan & Analyze Product Label")
             }
         }
     ) { paddingValues ->
@@ -131,18 +187,18 @@ fun InspectionHistoryScreen(viewModel: MainViewModel) {
                 OutlinedTextField(
                     value = searchQuery,
                     onValueChange = { viewModel.setSearchQuery(it) },
-                    placeholder = { Text("Search product, seed type, barcode...") },
+                    placeholder = { Text("Search by name, brand, barcode, location...") },
                     leadingIcon = {
                         Icon(
                             Icons.Default.Search,
-                            contentDescription = null,
+                            contentDescription = "Search Barcode or Product Name",
                             tint = AgriLeafGreen
                         )
                     },
                     trailingIcon = {
                         if (searchQuery.isNotEmpty()) {
                             IconButton(onClick = { viewModel.setSearchQuery("") }) {
-                                Icon(Icons.Default.Clear, contentDescription = "Clear")
+                                Icon(Icons.Default.Clear, contentDescription = "Clear Search Field")
                             }
                         }
                     },
@@ -163,7 +219,7 @@ fun InspectionHistoryScreen(viewModel: MainViewModel) {
 
                 // Tier 1: Category Chips
                 Text(
-                    text = "COMMODITY CATEGORY",
+                    text = "PRODUCT TYPE",
                     style = MaterialTheme.typography.labelSmall.copy(
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -181,7 +237,7 @@ fun InspectionHistoryScreen(viewModel: MainViewModel) {
                         FilterChip(
                             selected = categoryFilter == "ALL",
                             onClick = { viewModel.setCategoryFilter("ALL") },
-                            label = { Text("All Commodities") },
+                            label = { Text("All Products") },
                             modifier = Modifier.testTag("filter_cat_all"),
                             colors = FilterChipDefaults.filterChipColors(
                                 selectedContainerColor = AgriLeafGreen,
@@ -193,7 +249,7 @@ fun InspectionHistoryScreen(viewModel: MainViewModel) {
                         FilterChip(
                             selected = categoryFilter == "AGRI",
                             onClick = { viewModel.setCategoryFilter("AGRI") },
-                            label = { Text("🌱 Seeds & Fertilizers") },
+                            label = { Text("🌱 Seeds & Farm") },
                             modifier = Modifier.testTag("filter_cat_agri"),
                             colors = FilterChipDefaults.filterChipColors(
                                 selectedContainerColor = AgriLeafGreen,
@@ -205,7 +261,7 @@ fun InspectionHistoryScreen(viewModel: MainViewModel) {
                         FilterChip(
                             selected = categoryFilter == "OILS",
                             onClick = { viewModel.setCategoryFilter("OILS") },
-                            label = { Text("🛢️ Edible Oils & Ghee") },
+                            label = { Text("🛢️ Oils & Ghee") },
                             modifier = Modifier.testTag("filter_cat_oils"),
                             colors = FilterChipDefaults.filterChipColors(
                                 selectedContainerColor = AgriLeafGreen,
@@ -217,7 +273,7 @@ fun InspectionHistoryScreen(viewModel: MainViewModel) {
                         FilterChip(
                             selected = categoryFilter == "FOOD",
                             onClick = { viewModel.setCategoryFilter("FOOD") },
-                            label = { Text("🌾 Packaged Foods") },
+                            label = { Text("🌾 Foods & Drinks") },
                             modifier = Modifier.testTag("filter_cat_food"),
                             colors = FilterChipDefaults.filterChipColors(
                                 selectedContainerColor = AgriLeafGreen,
@@ -229,7 +285,7 @@ fun InspectionHistoryScreen(viewModel: MainViewModel) {
                         FilterChip(
                             selected = categoryFilter == "ECO",
                             onClick = { viewModel.setCategoryFilter("ECO") },
-                            label = { Text("♻️ Environmental Supplies") },
+                            label = { Text("♻️ Eco Supplies") },
                             modifier = Modifier.testTag("filter_cat_eco"),
                             colors = FilterChipDefaults.filterChipColors(
                                 selectedContainerColor = AgriLeafGreen,
@@ -239,9 +295,20 @@ fun InspectionHistoryScreen(viewModel: MainViewModel) {
                     }
                 }
 
-                Spacer(modifier = Modifier.height(6.dp))
+                Spacer(modifier = Modifier.height(10.dp))
 
                 // Tier 2: Legal Status Chips
+                Text(
+                    text = "FILTER BY STATUS",
+                    style = MaterialTheme.typography.labelSmall.copy(
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        fontSize = 10.sp,
+                        letterSpacing = 0.8.sp
+                    ),
+                    modifier = Modifier.padding(start = 2.dp, bottom = 4.dp)
+                )
+
                 LazyRow(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     modifier = Modifier.fillMaxWidth()
@@ -258,7 +325,7 @@ fun InspectionHistoryScreen(viewModel: MainViewModel) {
                         FilterChip(
                             selected = statusFilter == "COMPLIANT",
                             onClick = { viewModel.setStatusFilter("COMPLIANT") },
-                            label = { Text("100% Compliant") },
+                            label = { Text("✅ All Good (Legal)") },
                             leadingIcon = {
                                 Box(
                                     modifier = Modifier
@@ -274,7 +341,7 @@ fun InspectionHistoryScreen(viewModel: MainViewModel) {
                         FilterChip(
                             selected = statusFilter == "NON_COMPLIANT",
                             onClick = { viewModel.setStatusFilter("NON_COMPLIANT") },
-                            label = { Text("Violations Flagged") },
+                            label = { Text("⚠️ Minor Warnings") },
                             leadingIcon = {
                                 Box(
                                     modifier = Modifier
@@ -290,7 +357,7 @@ fun InspectionHistoryScreen(viewModel: MainViewModel) {
                         FilterChip(
                             selected = statusFilter == "SEIZURE",
                             onClick = { viewModel.setStatusFilter("SEIZURE") },
-                            label = { Text("Seizure Warranted") },
+                            label = { Text("❌ Illegal / Violations") },
                             leadingIcon = {
                                 Box(
                                     modifier = Modifier
@@ -317,8 +384,8 @@ fun InspectionHistoryScreen(viewModel: MainViewModel) {
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Icon(
-                            imageVector = Icons.Default.History,
-                            contentDescription = null,
+                            imageVector = Icons.AutoMirrored.Filled.ReceiptLong,
+                            contentDescription = "No Saved Audit History",
                             tint = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.size(54.dp)
                         )
@@ -332,11 +399,26 @@ fun InspectionHistoryScreen(viewModel: MainViewModel) {
                         )
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
-                            text = "Try adjusting your search terms or scan a new agricultural label.",
+                            text = "No records match your search terms or active status/category filters.",
                             style = MaterialTheme.typography.bodySmall.copy(
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         )
+                        if (searchQuery.isNotEmpty() || statusFilter != "ALL" || categoryFilter != "ALL") {
+                            Spacer(modifier = Modifier.height(16.dp))
+                            OutlinedButton(
+                                onClick = { viewModel.clearAllFilters() },
+                                shape = RoundedCornerShape(12.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Refresh,
+                                    contentDescription = "Reset All Search Filters",
+                                    modifier = Modifier.size(16.dp)
+                                )
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text("Clear All Filters")
+                            }
+                        }
                     }
                 }
             } else {
@@ -351,7 +433,7 @@ fun InspectionHistoryScreen(viewModel: MainViewModel) {
                         InspectionRecordCard(
                             record = record,
                             onClick = { viewModel.openExistingRecord(record) },
-                            onDelete = { viewModel.deleteRecord(record.id) }
+                            onDelete = { recordToDelete = record }
                         )
                     }
                 }
@@ -379,9 +461,9 @@ private fun InspectionRecordCard(
     }
 
     val statusLabel = when (record.overallStatus) {
-        "COMPLIANT" -> "100% Compliant"
-        "SEIZURE_RECOMMENDED" -> "Seizure Recommended"
-        else -> "${record.violationsCount} Violation(s)"
+        "COMPLIANT" -> "✅ Legal (Passed)"
+        "SEIZURE_RECOMMENDED" -> "🚨 Serious Violation"
+        else -> "⚠️ Warning (${record.violationsCount} Issues)"
     }
 
     val dateFormat = SimpleDateFormat("dd MMM yyyy, hh:mm a", Locale.getDefault())
@@ -469,59 +551,106 @@ private fun InspectionRecordCard(
                 )
             )
 
+            if (record.barcode.isNotBlank()) {
+                Spacer(modifier = Modifier.height(4.dp))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = Icons.Default.QrCodeScanner,
+                        contentDescription = null,
+                        tint = AgriLeafGreen,
+                        modifier = Modifier.size(13.dp)
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = "Scanned Barcode / QR: ${record.barcode}",
+                        style = MaterialTheme.typography.labelSmall.copy(
+                            fontWeight = FontWeight.SemiBold,
+                            color = AgriLeafGreen,
+                            fontSize = 11.sp
+                        )
+                    )
+                }
+            }
+
             Spacer(modifier = Modifier.height(10.dp))
 
-            // Metrics Grid (MRP, Net Qty, USP)
+            // Metrics Grid (MRP, Net Qty, Price/100g, Expiry)
             Surface(
                 shape = RoundedCornerShape(10.dp),
                 color = MaterialTheme.colorScheme.surface,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 12.dp, vertical = 8.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Column {
-                        Text(
-                            text = "DECLARED MRP",
-                            style = MaterialTheme.typography.labelSmall.copy(
-                                fontSize = 9.sp,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                Column(modifier = Modifier.padding(10.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Column {
+                            Text(
+                                text = "DECLARED MRP",
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    fontSize = 9.sp,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
                             )
-                        )
-                        Text(
-                            text = record.declaredMrp,
-                            style = MaterialTheme.typography.bodySmall.copy(
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onSurface
+                            Text(
+                                text = record.declaredMrp,
+                                style = MaterialTheme.typography.bodySmall.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
                             )
-                        )
+                        }
+
+                        Column {
+                            Text(
+                                text = "NET WEIGHT / QTY",
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    fontSize = 9.sp,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            )
+                            Text(
+                                text = record.netQuantity,
+                                style = MaterialTheme.typography.bodySmall.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                            )
+                        }
+
+                        Column {
+                            Text(
+                                text = "PRICE / 100g",
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    fontSize = 9.sp,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            )
+                            Text(
+                                text = if (record.pricePer100g.isNotBlank()) record.pricePer100g.substringBefore(" (") else record.declaredUsp,
+                                style = MaterialTheme.typography.bodySmall.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    color = AgriLeafGreen
+                                )
+                            )
+                        }
                     }
 
-                    Column {
-                        Text(
-                            text = "NET QUANTITY",
-                            style = MaterialTheme.typography.labelSmall.copy(
-                                fontSize = 9.sp,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        )
-                        Text(
-                            text = record.netQuantity,
-                            style = MaterialTheme.typography.bodySmall.copy(
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
-                        )
-                    }
+                    Spacer(modifier = Modifier.height(6.dp))
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f))
+                    Spacer(modifier = Modifier.height(6.dp))
 
-                    Column {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
                         Text(
-                            text = "EXPIRY / USE BY",
+                            text = "EXPIRY / SHELF-LIFE:",
                             style = MaterialTheme.typography.labelSmall.copy(
                                 fontSize = 9.sp,
+                                fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         )
@@ -529,7 +658,8 @@ private fun InspectionRecordCard(
                             text = if (record.expiryDate.isNotBlank()) record.expiryDate else record.mfgPackingDate,
                             style = MaterialTheme.typography.bodySmall.copy(
                                 fontWeight = FontWeight.Bold,
-                                color = AgriLeafGreen
+                                color = if (record.expiryStatus == "EXPIRED") ComplianceFail else AgriLeafGreen,
+                                fontSize = 11.sp
                             ),
                             maxLines = 1
                         )
@@ -537,17 +667,100 @@ private fun InspectionRecordCard(
                 }
             }
 
-            if (record.ingredientsList.isNotBlank()) {
+            // Hidden Ingredients & Additives Tag
+            if (record.quidDetails.isNotBlank() || record.additivesAnalysis.isNotBlank()) {
+                Spacer(modifier = Modifier.height(8.dp))
+                Surface(
+                    shape = RoundedCornerShape(8.dp),
+                    color = Color(0xFFFEF3C7).copy(alpha = 0.6f),
+                    border = BorderStroke(1.dp, Color(0xFFF59E0B).copy(alpha = 0.4f)),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column(modifier = Modifier.padding(8.dp)) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                Icons.Default.Warning,
+                                contentDescription = null,
+                                tint = Color(0xFFB45309),
+                                modifier = Modifier.size(13.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = "Hidden Ingredients & Additives Analysis",
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFFB45309),
+                                    fontSize = 11.sp
+                                )
+                            )
+                        }
+                        if (record.quidDetails.isNotBlank()) {
+                            Spacer(modifier = Modifier.height(2.dp))
+                            Text(
+                                text = "• Undisclosed Ratios: ${record.quidDetails}",
+                                style = MaterialTheme.typography.bodySmall.copy(
+                                    fontSize = 10.sp,
+                                    color = Color(0xFF78350F),
+                                    lineHeight = 14.sp
+                                ),
+                                maxLines = 2
+                            )
+                        }
+                        if (record.additivesAnalysis.isNotBlank()) {
+                            Spacer(modifier = Modifier.height(2.dp))
+                            Text(
+                                text = "• Additives: ${record.additivesAnalysis}",
+                                style = MaterialTheme.typography.bodySmall.copy(
+                                    fontSize = 10.sp,
+                                    color = Color(0xFF78350F),
+                                    lineHeight = 14.sp
+                                ),
+                                maxLines = 2
+                            )
+                        }
+                    }
+                }
+            }
+
+            // Health Precautions
+            if (record.healthConcerns.isNotBlank() || record.foplWarning.isNotBlank()) {
                 Spacer(modifier = Modifier.height(6.dp))
-                Text(
-                    text = "Ingredients: ${record.ingredientsList}",
-                    style = MaterialTheme.typography.bodySmall.copy(
-                        fontSize = 11.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        lineHeight = 15.sp
-                    ),
-                    maxLines = 2
-                )
+                Surface(
+                    shape = RoundedCornerShape(8.dp),
+                    color = Color(0xFFFEE2E2).copy(alpha = 0.6f),
+                    border = BorderStroke(1.dp, Color(0xFFEF4444).copy(alpha = 0.3f)),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column(modifier = Modifier.padding(8.dp)) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                Icons.Default.Shield,
+                                contentDescription = null,
+                                tint = Color(0xFFDC2626),
+                                modifier = Modifier.size(13.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = "Health & Dietary Precautions",
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFFDC2626),
+                                    fontSize = 11.sp
+                                )
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Text(
+                            text = if (record.healthConcerns.isNotBlank()) record.healthConcerns else record.foplWarning,
+                            style = MaterialTheme.typography.bodySmall.copy(
+                                fontSize = 10.sp,
+                                color = Color(0xFF991B1B),
+                                lineHeight = 14.sp
+                            ),
+                            maxLines = 2
+                        )
+                    }
+                }
             }
 
             if (record.ruleViolationsSummary.isNotBlank()) {
@@ -555,9 +768,9 @@ private fun InspectionRecordCard(
                 Text(
                     text = record.ruleViolationsSummary,
                     style = MaterialTheme.typography.bodySmall.copy(
-                        fontSize = 11.sp,
+                        fontSize = 10.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        lineHeight = 15.sp
+                        lineHeight = 14.sp
                     ),
                     maxLines = 2
                 )
@@ -614,10 +827,10 @@ private fun InspectionRecordCard(
                             .testTag("delete_record_${record.id}")
                     ) {
                         Icon(
-                            Icons.Default.Delete,
-                            contentDescription = "Delete",
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.size(16.dp)
+                            imageVector = Icons.Default.DeleteOutline,
+                            contentDescription = "Delete Record",
+                            tint = MaterialTheme.colorScheme.error.copy(alpha = 0.8f),
+                            modifier = Modifier.size(18.dp)
                         )
                     }
                 }

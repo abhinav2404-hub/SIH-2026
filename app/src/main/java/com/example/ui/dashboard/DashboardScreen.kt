@@ -28,27 +28,30 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.automirrored.filled.FactCheck
 import androidx.compose.material.icons.filled.AddAlert
 import androidx.compose.material.icons.filled.Assessment
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Badge
 import androidx.compose.material.icons.filled.Calculate
+import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.CheckCircleOutline
-import androidx.compose.material.icons.filled.Error
-import androidx.compose.material.icons.filled.ErrorOutline
-import androidx.compose.material.icons.filled.FactCheck
 import androidx.compose.material.icons.filled.FlashOn
 import androidx.compose.material.icons.filled.Gavel
 import androidx.compose.material.icons.filled.History
+import androidx.compose.material.icons.filled.LocalOffer
 import androidx.compose.material.icons.filled.MenuBook
 import androidx.compose.material.icons.filled.PhotoLibrary
+import androidx.compose.material.icons.filled.PriceCheck
 import androidx.compose.material.icons.filled.QrCodeScanner
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Security
 import androidx.compose.material.icons.filled.Shield
+import androidx.compose.material.icons.filled.SmartToy
 import androidx.compose.material.icons.filled.TextFormat
 import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material.icons.filled.ZoomIn
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -64,6 +67,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -83,6 +89,7 @@ import com.example.ui.AppScreen
 import com.example.ui.MainViewModel
 import com.example.ui.components.AppBottomNavBar
 import com.example.ui.components.AppTopBar
+import com.example.ui.ruleset.RulesetSelectorDialog
 import com.example.ui.theme.AppFontWeights
 import com.example.util.ImageBitmapHelper
 import com.example.ui.theme.AgriEmerald
@@ -120,6 +127,11 @@ fun DashboardScreen(viewModel: MainViewModel) {
 
     val currentUser by viewModel.currentUser.collectAsState()
     val inspections by viewModel.inspectionHistory.collectAsState()
+    val activeRuleset by viewModel.activeRuleset.collectAsState()
+    val offlinePendingCount by viewModel.offlineQueueCount.collectAsState()
+    val isOfflineMode by viewModel.isOfflineMode.collectAsState()
+
+    var showRulesetDialog by remember { mutableStateOf(false) }
 
     val totalInspections = inspections.size
     val compliantCount = inspections.count { it.overallStatus == "COMPLIANT" }
@@ -127,13 +139,22 @@ fun DashboardScreen(viewModel: MainViewModel) {
     val seizureCount = inspections.count { it.overallStatus == "SEIZURE_RECOMMENDED" }
     val compliantPercentage = if (totalInspections > 0) (compliantCount * 100) / totalInspections else 100
 
+    if (showRulesetDialog) {
+        RulesetSelectorDialog(
+            currentRuleset = activeRuleset,
+            onSelectRuleset = { viewModel.setRuleset(it) },
+            onDismiss = { showRulesetDialog = false }
+        )
+    }
+
     Scaffold(
         topBar = {
             AppTopBar(
-                title = "Legal Metrology Portal",
-                subtitle = "Packaged Commodities Rules, 2011",
+                title = "MudraCheck",
+                subtitle = "Smart Package Scanner • Legal Check",
                 currentUser = currentUser,
-                onLogoutClick = { viewModel.logout() }
+                onLogoutClick = { viewModel.logout() },
+                onSettingsClick = { viewModel.navigateTo(AppScreen.SETTINGS) }
             )
         },
         bottomBar = {
@@ -151,6 +172,81 @@ fun DashboardScreen(viewModel: MainViewModel) {
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
+            // Global Regulatory Ruleset & Sync Queue Control Bar
+            item {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    // Active Ruleset Badge
+                    Card(
+                        modifier = Modifier
+                            .weight(1.2f)
+                            .clickable { showRulesetDialog = true }
+                            .testTag("dashboard_ruleset_selector_card"),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f))
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(text = activeRuleset.flagEmoji, fontSize = 22.sp)
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = "Law: ${activeRuleset.countryName}",
+                                    style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                                    maxLines = 1
+                                )
+                                Text(
+                                    text = "${activeRuleset.rulesetId} (${activeRuleset.currencySymbol}) • Tap to switch",
+                                    style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp),
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+                    }
+
+                    // Offline Sync Queue Badge
+                    Card(
+                        modifier = Modifier
+                            .weight(0.8f)
+                            .clickable { viewModel.navigateTo(AppScreen.OFFLINE_QUEUE) }
+                            .testTag("dashboard_offline_queue_card"),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = if (offlinePendingCount > 0 || isOfflineMode) Color(0xFFFFF3E0) else Color(0xFFE8F5E9)
+                        )
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 10.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = if (isOfflineMode) Icons.Default.Warning else Icons.Default.CheckCircle,
+                                contentDescription = "Offline Storage Status",
+                                tint = if (offlinePendingCount > 0 || isOfflineMode) Color(0xFFE65100) else Color(0xFF2E7D32),
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Column {
+                                Text(
+                                    text = if (isOfflineMode) "Offline Mode" else "Saved on Phone",
+                                    style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                                    color = if (offlinePendingCount > 0 || isOfflineMode) Color(0xFFE65100) else Color(0xFF2E7D32)
+                                )
+                                Text(
+                                    text = if (offlinePendingCount > 0) "$offlinePendingCount saved on phone" else "All scans backed up",
+                                    style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp),
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+
             // Officer Profile Card
             item {
                 OfficerBadgeCard(
@@ -198,8 +294,8 @@ fun DashboardScreen(viewModel: MainViewModel) {
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
-                                Icons.Default.FactCheck,
-                                contentDescription = null,
+                                Icons.AutoMirrored.Filled.FactCheck,
+                                contentDescription = "Food Label Compliance Charter",
                                 tint = Color.White,
                                 modifier = Modifier.size(24.dp)
                             )
@@ -208,7 +304,7 @@ fun DashboardScreen(viewModel: MainViewModel) {
                         Column(modifier = Modifier.weight(1f)) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Text(
-                                    text = "Food Label Transparency",
+                                    text = "Food Label Transparency & Pure Ingredients",
                                     style = MaterialTheme.typography.titleSmall.copy(
                                         fontWeight = AppFontWeights.Header,
                                         color = Color.White
@@ -220,7 +316,7 @@ fun DashboardScreen(viewModel: MainViewModel) {
                                     color = AgriSproutMint
                                 ) {
                                     Text(
-                                        text = "QUID Proposal",
+                                        text = "Real Ingredients %",
                                         style = MaterialTheme.typography.labelSmall.copy(
                                             color = AgriForestGreen,
                                             fontSize = 9.sp,
@@ -232,7 +328,7 @@ fun DashboardScreen(viewModel: MainViewModel) {
                             }
                             Spacer(modifier = Modifier.height(3.dp))
                             Text(
-                                text = "7 Core Demands, Palm Oil History, Oil Safety Guide & QUID Simulator",
+                                text = "Check real ingredient % (QUID), Palm Oil health facts, cooking oil guide & citizen rights",
                                 style = MaterialTheme.typography.bodySmall.copy(
                                     color = Color(0xFFD8F3DC),
                                     fontSize = 11.sp,
@@ -253,7 +349,7 @@ fun DashboardScreen(viewModel: MainViewModel) {
             // Statutory Metrics Grid
             item {
                 Text(
-                    text = "Enforcement & Compliance Overview",
+                    text = "Scan Summary & Safety Overview",
                     style = MaterialTheme.typography.titleMedium.copy(
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface
@@ -267,17 +363,17 @@ fun DashboardScreen(viewModel: MainViewModel) {
                 ) {
                     StatKpiCard(
                         modifier = Modifier.weight(1f),
-                        title = "Total Scanned",
+                        title = "Total Checked",
                         value = "$totalInspections",
-                        subtitle = "Audited batches",
+                        subtitle = "All scanned packets",
                         color = MetrologyNavy,
                         containerColor = MaterialTheme.colorScheme.surfaceVariant
                     )
                     StatKpiCard(
                         modifier = Modifier.weight(1f),
-                        title = "Compliant Rate",
+                        title = "Passed (Safe)",
                         value = "$compliantPercentage%",
-                        subtitle = "$compliantCount Passed",
+                        subtitle = "$compliantCount Passed 100%",
                         color = CompliancePass,
                         containerColor = CompliancePassContainer
                     )
@@ -291,17 +387,17 @@ fun DashboardScreen(viewModel: MainViewModel) {
                 ) {
                     StatKpiCard(
                         modifier = Modifier.weight(1f),
-                        title = "Rule Violations",
+                        title = "Issues Found",
                         value = "$nonCompliantCount",
-                        subtitle = "Notices issued",
+                        subtitle = "Rule violations flagged",
                         color = ComplianceWarning,
                         containerColor = ComplianceWarningContainer
                     )
                     StatKpiCard(
                         modifier = Modifier.weight(1f),
-                        title = "Seizures",
+                        title = "Action Needed",
                         value = "$seizureCount",
-                        subtitle = "Sec 36 warranted",
+                        subtitle = "Serious / Fake label warning",
                         color = ComplianceFail,
                         containerColor = ComplianceFailContainer
                     )
@@ -317,13 +413,13 @@ fun DashboardScreen(viewModel: MainViewModel) {
                 ) {
                     Column {
                         Text(
-                            text = "SIH 2026 Test Benchmark Suite",
+                            text = "Try Example Product Packets",
                             style = MaterialTheme.typography.titleMedium.copy(
                                 fontWeight = FontWeight.Bold
                             )
                         )
                         Text(
-                            text = "One-tap rule compliance tests across commodity classes",
+                            text = "Tap any packet to test how MudraCheck catches violations or passes good labels",
                             style = MaterialTheme.typography.bodySmall.copy(
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 fontSize = 11.sp
@@ -388,7 +484,7 @@ fun DashboardScreen(viewModel: MainViewModel) {
                             Column {
                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                     Text(
-                                        text = "Statutory Reference Help",
+                                        text = "Ask AI Guide & Search Laws",
                                         style = MaterialTheme.typography.titleSmall.copy(
                                             fontWeight = FontWeight.Bold,
                                             color = MaterialTheme.colorScheme.onSurface
@@ -400,7 +496,7 @@ fun DashboardScreen(viewModel: MainViewModel) {
                                         color = AgriEmerald.copy(alpha = 0.2f)
                                     ) {
                                         Text(
-                                            text = "Search Grounded",
+                                            text = "Search Answers",
                                             style = MaterialTheme.typography.labelSmall.copy(
                                                 color = AgriForestGreen,
                                                 fontSize = 9.sp,
@@ -412,7 +508,7 @@ fun DashboardScreen(viewModel: MainViewModel) {
                                 }
                                 Spacer(modifier = Modifier.height(2.dp))
                                 Text(
-                                    text = "Quick summaries for Legal Metrology, Seeds Act 1966 & Fertilizer Control Order 1985",
+                                    text = "Ask questions about MRP rules, seed purity, expiry dates, or consumer complaints",
                                     style = MaterialTheme.typography.bodySmall.copy(
                                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                                         fontSize = 11.sp,
@@ -435,38 +531,53 @@ fun DashboardScreen(viewModel: MainViewModel) {
             // Statutory Tools & Utilities Quick Grid
             item {
                 Text(
-                    text = "Legal Metrology Utilities",
+                    text = "Helpful Tools & Calculators",
                     style = MaterialTheme.typography.titleMedium.copy(
                         fontWeight = FontWeight.Bold
                     )
                 )
                 Spacer(modifier = Modifier.height(8.dp))
 
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(10.dp)
-                ) {
-                    ToolActionTile(
-                        modifier = Modifier.weight(1f),
-                        icon = Icons.Default.Calculate,
-                        title = "USP Calc",
-                        subtitle = "Rule 6(1)(e)",
-                        onClick = { viewModel.navigateTo(AppScreen.TOOLS) }
-                    )
-                    ToolActionTile(
-                        modifier = Modifier.weight(1f),
-                        icon = Icons.Default.TextFormat,
-                        title = "Font Verifier",
-                        subtitle = "Schedule II",
-                        onClick = { viewModel.navigateTo(AppScreen.TOOLS) }
-                    )
-                    ToolActionTile(
-                        modifier = Modifier.weight(1f),
-                        icon = Icons.Default.AutoAwesome,
-                        title = "AI Reference",
-                        subtitle = "Search Grounded",
-                        onClick = { viewModel.navigateTo(AppScreen.HELP_SEARCH) }
-                    )
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        ToolActionTile(
+                            modifier = Modifier.weight(1f),
+                            icon = Icons.Default.LocalOffer,
+                            title = "Price per 100g (USP)",
+                            subtitle = "Calculate true cost per gram/ml",
+                            onClick = { viewModel.navigateTo(AppScreen.TOOLS) }
+                        )
+                        ToolActionTile(
+                            modifier = Modifier.weight(1f),
+                            icon = Icons.Default.Calculate,
+                            title = "Weight Check (MPE)",
+                            subtitle = "Check short-weight & tolerance",
+                            onClick = { viewModel.navigateTo(AppScreen.TOOLS) }
+                        )
+                    }
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        ToolActionTile(
+                            modifier = Modifier.weight(1f),
+                            icon = Icons.Default.ZoomIn,
+                            title = "Text & Font Size",
+                            subtitle = "Check if price/date text is big enough",
+                            onClick = { viewModel.navigateTo(AppScreen.TOOLS) }
+                        )
+                        ToolActionTile(
+                            modifier = Modifier.weight(1f),
+                            icon = Icons.Default.SmartToy,
+                            title = "Rules Guide & FAQ",
+                            subtitle = "Plain-language laws & AI helper",
+                            onClick = { viewModel.navigateTo(AppScreen.HELP_SEARCH) }
+                        )
+                    }
                 }
             }
 
@@ -684,7 +795,7 @@ fun PrimaryScannerBanner(
                             border = BorderStroke(1.dp, Color(0xFFE2EBD6).copy(alpha = 0.5f))
                         ) {
                             Text(
-                                text = "AI-POWERED OCR & RULE ENGINE",
+                                text = "⚡ INSTANT LABEL SCANNER",
                                 modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
                                 style = MaterialTheme.typography.labelSmall.copy(
                                     color = Color(0xFFE2EBD6),
@@ -698,7 +809,7 @@ fun PrimaryScannerBanner(
                         Spacer(modifier = Modifier.height(10.dp))
 
                         Text(
-                            text = "Scan Commodity Label",
+                            text = "Scan Any Food or Agri Packet",
                             style = MaterialTheme.typography.titleLarge.copy(
                                 fontWeight = FontWeight.Bold,
                                 color = Color.White
@@ -708,7 +819,7 @@ fun PrimaryScannerBanner(
                         Spacer(modifier = Modifier.height(2.dp))
 
                         Text(
-                            text = "Check Rule 6 declarations, MRP, USP, font height & country of origin instantly",
+                            text = "Point camera or upload a photo to verify MRP, Net Weight, Expiry date, and Manufacturer details",
                             style = MaterialTheme.typography.bodySmall.copy(
                                 color = Color.White.copy(alpha = 0.9f),
                                 fontSize = 12.sp,
@@ -729,7 +840,7 @@ fun PrimaryScannerBanner(
                     ) {
                         Icon(
                             Icons.Default.QrCodeScanner,
-                            contentDescription = "Scan",
+                            contentDescription = "Scan Product Label",
                             tint = MetrologyNavy,
                             modifier = Modifier.size(28.dp)
                         )
@@ -754,9 +865,9 @@ fun PrimaryScannerBanner(
                             contentColor = Color(0xFF234413)
                         )
                     ) {
-                        Icon(Icons.Default.QrCodeScanner, contentDescription = null, modifier = Modifier.size(16.dp))
+                        Icon(Icons.Default.CameraAlt, contentDescription = null, modifier = Modifier.size(16.dp))
                         Spacer(modifier = Modifier.width(6.dp))
-                        Text("Live Lens", fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                        Text("Open Camera • Scan", fontWeight = FontWeight.Bold, fontSize = 12.sp)
                     }
 
                     OutlinedButton(
@@ -773,7 +884,7 @@ fun PrimaryScannerBanner(
                     ) {
                         Icon(Icons.Default.PhotoLibrary, contentDescription = null, modifier = Modifier.size(16.dp))
                         Spacer(modifier = Modifier.width(6.dp))
-                        Text("Upload Gallery", fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                        Text("Choose from Gallery", fontWeight = FontWeight.Bold, fontSize = 12.sp)
                     }
                 }
             }
@@ -913,7 +1024,7 @@ fun SampleBenchmarkCard(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
-                    text = if (isCompliant) "100% Compliant" else "Flagged Violations",
+                    text = if (isCompliant) "✅ PASS (Legal Pack)" else "❌ FAIL (Has Violations)",
                     style = MaterialTheme.typography.labelSmall.copy(
                         color = statusColor,
                         fontWeight = FontWeight.Bold,
@@ -1008,10 +1119,10 @@ fun InspectionRecordCard(
     }
 
     val statusLabel = when (record.overallStatus) {
-        "COMPLIANT" -> "100% Compliant"
-        "MINOR_VIOLATIONS" -> "Minor Defect"
-        "NON_COMPLIANT" -> "${record.violationsCount} Violations"
-        else -> "Seizure Recommended"
+        "COMPLIANT" -> "✅ Legal (Passed)"
+        "MINOR_VIOLATIONS" -> "⚠️ Warning (Minor)"
+        "NON_COMPLIANT" -> "❌ Illegal (${record.violationsCount} Issues)"
+        else -> "🚨 Serious Violation"
     }
 
     val dateFormat = SimpleDateFormat("dd MMM, hh:mm a", Locale.getDefault())

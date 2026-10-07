@@ -311,11 +311,11 @@ fun LoginScreen(viewModel: MainViewModel) {
                 )
 
                 val rolesList = listOf(
-                    Triple(OfficerRole.SENIOR_LMO, "Enforcement Officer", Icons.Default.Shield),
-                    Triple(OfficerRole.AGRI_PACKAGER, "Agri-Packager", Icons.Default.Business),
-                    Triple(OfficerRole.FARMER_FPO, "Farmer / FPO (किसान संघ)", Icons.Default.Agriculture),
-                    Triple(OfficerRole.GRIEVANCE_AUDITOR, "Consumer Redressal", Icons.Default.Store),
-                    Triple(OfficerRole.STATE_CONTROLLER, "State Metrologist", Icons.Default.Gavel)
+                    Triple(OfficerRole.SENIOR_LMO, "👮 Inspector (Officer)", Icons.Default.Shield),
+                    Triple(OfficerRole.AGRI_PACKAGER, "🏭 Brand / Packager", Icons.Default.Business),
+                    Triple(OfficerRole.FARMER_FPO, "🚜 Farmer / FPO (किसान संघ)", Icons.Default.Agriculture),
+                    Triple(OfficerRole.GRIEVANCE_AUDITOR, "🛒 Consumer / Shopper (ग्राहक)", Icons.Default.Store),
+                    Triple(OfficerRole.STATE_CONTROLLER, "🏛️ State Authority", Icons.Default.Gavel)
                 )
 
                 LazyRow(
@@ -607,14 +607,14 @@ fun LoginScreen(viewModel: MainViewModel) {
 
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
-                                text = "Prototype Demo Mode Available",
+                                text = "Quick One-Tap Demo Access",
                                 style = MaterialTheme.typography.labelMedium.copy(
                                     fontWeight = FontWeight.Bold,
                                     color = MaterialTheme.colorScheme.onPrimaryContainer
                                 )
                             )
                             Text(
-                                text = "One-tap verification with simulated OTP 123456",
+                                text = "Skip SMS OTP and explore the app instantly",
                                 style = MaterialTheme.typography.bodySmall.copy(
                                     fontSize = 11.sp,
                                     color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
@@ -634,7 +634,7 @@ fun LoginScreen(viewModel: MainViewModel) {
                                 contentColor = Color.White
                             )
                         ) {
-                            Text("Demo In", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                            Text("Quick Login", fontSize = 12.sp, fontWeight = FontWeight.Bold)
                         }
                     }
                 }

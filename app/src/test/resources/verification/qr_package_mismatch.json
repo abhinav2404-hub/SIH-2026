@@ -1,0 +1,18 @@
+{
+  "qr": {
+    "gtin": "8901234567890",
+    "batch": "BATCH-A100",
+    "expiry": "2026-12-28"
+  },
+  "package": {
+    "gtin": "8901234567890",
+    "batch": "BATCH-B999",
+    "expiry": "30/12/2026"
+  },
+  "expected": {
+    "gtinMatch": true,
+    "batchMatch": false,
+    "expiryMatch": false,
+    "status": "DATA DISCREPANCY"
+  }
+}

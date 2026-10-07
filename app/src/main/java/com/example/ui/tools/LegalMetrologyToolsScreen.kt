@@ -24,7 +24,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Calculate
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Gavel
-import androidx.compose.material.icons.filled.TextFormat
+import androidx.compose.material.icons.filled.LocalOffer
+import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material.icons.filled.ZoomIn
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FilterChip
@@ -66,8 +68,8 @@ fun LegalMetrologyToolsScreen(viewModel: MainViewModel) {
     Scaffold(
         topBar = {
             AppTopBar(
-                title = "Legal Metrology Utilities",
-                subtitle = "Statutory Calculators & Standards",
+                title = "Fair Price & Weight Tools",
+                subtitle = "Easy Calculators for Price per 100g, Weight & Fines",
                 showBackButton = true,
                 onBackClick = { viewModel.navigateTo(AppScreen.DASHBOARD) },
                 currentUser = currentUser
@@ -93,12 +95,17 @@ fun LegalMetrologyToolsScreen(viewModel: MainViewModel) {
                 UspCalculatorCard()
             }
 
-            // Tool 2: Principal Display Panel Font Height Verifier (State isolated)
+            // Tool 2: Net Weight Tolerance & Error (MPE) (State isolated)
+            item {
+                NetQuantityToleranceCard()
+            }
+
+            // Tool 3: Principal Display Panel Font Height Verifier (State isolated)
             item {
                 ScheduleFontHeightCard()
             }
 
-            // Tool 3: Statutory Penalty & Compounding Estimator (State isolated)
+            // Tool 4: Statutory Penalty & Compounding Estimator (State isolated)
             item {
                 PenaltyEstimatorCard()
             }
@@ -151,18 +158,18 @@ fun UspCalculatorCard() {
                         .background(MaterialTheme.colorScheme.primaryContainer, CircleShape),
                     contentAlignment = Alignment.Center
                 ) {
-                    Icon(Icons.Default.Calculate, contentDescription = null, tint = MetrologyNavy)
+                    Icon(Icons.Default.LocalOffer, contentDescription = null, tint = MetrologyNavy)
                 }
                 Spacer(modifier = Modifier.width(10.dp))
                 Column {
                     Text(
-                        text = "Unit Sale Price (USP) Calculator",
+                        text = "Unit Sale Price (USP) • Price Per Unit",
                         style = MaterialTheme.typography.titleMedium.copy(
                             fontWeight = AppFontWeights.Header
                         )
                     )
                     Text(
-                        text = "Rule 6(1)(e) - Mandatory per unit pricing",
+                        text = "Rule 6(11): Compare cost per 100g or 100ml. Tells you if the big family pack is really cheaper.",
                         style = MaterialTheme.typography.bodySmall.copy(
                             fontWeight = AppFontWeights.Body,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -181,6 +188,7 @@ fun UspCalculatorCard() {
                     value = mrpInput,
                     onValueChange = { mrpInput = it },
                     label = { Text("Declared MRP (₹)", fontWeight = AppFontWeights.Body) },
+                    placeholder = { Text("e.g. 185.00") },
                     modifier = Modifier
                         .weight(1f)
                         .testTag("input_usp_mrp"),
@@ -192,6 +200,7 @@ fun UspCalculatorCard() {
                     value = qtyInput,
                     onValueChange = { qtyInput = it },
                     label = { Text("Net Quantity", fontWeight = AppFontWeights.Body) },
+                    placeholder = { Text("e.g. 1000") },
                     modifier = Modifier
                         .weight(1f)
                         .testTag("input_usp_qty"),
@@ -233,35 +242,47 @@ fun UspCalculatorCard() {
                 color = CompliancePassContainer,
                 border = BorderStroke(1.dp, Color(0xFF86EFAC))
             ) {
-                Row(
+                Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(12.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+                        .padding(12.dp)
                 ) {
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = "Mandatory Label Declaration:",
-                            style = MaterialTheme.typography.labelSmall.copy(
-                                color = Color(0xFF0F5A07),
-                                fontWeight = AppFontWeights.Header
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = "Mandatory Label Declaration (Rule 6(11)):",
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    color = Color(0xFF0F5A07),
+                                    fontWeight = AppFontWeights.Header
+                                )
                             )
-                        )
-                        Text(
-                            text = "₹ ${String.format(java.util.Locale.US, "%.3f", calculatedUsp)} / $selectedUnit",
-                            style = MaterialTheme.typography.titleLarge.copy(
-                                fontWeight = AppFontWeights.Header,
-                                color = Color(0xFF0F5A07)
+                            Text(
+                                text = "₹ ${String.format(java.util.Locale.US, "%.3f", calculatedUsp)} / $selectedUnit",
+                                style = MaterialTheme.typography.titleLarge.copy(
+                                    fontWeight = AppFontWeights.Header,
+                                    color = Color(0xFF0F5A07)
+                                )
                             )
+                        }
+
+                        Icon(
+                            Icons.Default.CheckCircle,
+                            contentDescription = null,
+                            tint = CompliancePass,
+                            modifier = Modifier.size(28.dp)
                         )
                     }
-
-                    Icon(
-                        Icons.Default.CheckCircle,
-                        contentDescription = null,
-                        tint = CompliancePass,
-                        modifier = Modifier.size(28.dp)
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "💡 Everyday Tip: By law, packages must print this price-per-unit so shoppers know the real value before paying.",
+                        style = MaterialTheme.typography.bodySmall.copy(
+                            color = Color(0xFF14532D),
+                            fontSize = 11.sp
+                        )
                     )
                 }
             }
@@ -309,18 +330,18 @@ fun ScheduleFontHeightCard() {
                         .background(MaterialTheme.colorScheme.primaryContainer, CircleShape),
                     contentAlignment = Alignment.Center
                 ) {
-                    Icon(Icons.Default.TextFormat, contentDescription = null, tint = MetrologyNavy)
+                    Icon(Icons.Default.ZoomIn, contentDescription = null, tint = MetrologyNavy)
                 }
                 Spacer(modifier = Modifier.width(10.dp))
                 Column {
                     Text(
-                        text = "Schedule II Font Height Verifier",
+                        text = "Label & Font Size Verifier (Schedule II)",
                         style = MaterialTheme.typography.titleMedium.copy(
                             fontWeight = AppFontWeights.Header
                         )
                     )
                     Text(
-                        text = "Rule 9 & Schedule II Legibility Thresholds",
+                        text = "Rule 9: Check if printed price, weight & expiry numbers are large enough to read easily.",
                         style = MaterialTheme.typography.bodySmall.copy(
                             fontWeight = AppFontWeights.Body,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -334,7 +355,8 @@ fun ScheduleFontHeightCard() {
             OutlinedTextField(
                 value = fontPackWeight,
                 onValueChange = { fontPackWeight = it },
-                label = { Text("Pack Net Quantity (in g or ml)", fontWeight = AppFontWeights.Body) },
+                label = { Text("Pack Net Quantity (Weight in g or Volume in ml)", fontWeight = AppFontWeights.Body) },
+                placeholder = { Text("e.g. 450") },
                 modifier = Modifier
                     .fillMaxWidth()
                     .testTag("input_font_pack_weight"),
@@ -368,12 +390,13 @@ fun ScheduleFontHeightCard() {
                             color = MetrologyNavy
                         )
                     )
+                    Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = "Under Schedule II: <=200g (min 2.0mm), 200-500g (min 4.0mm), >500g (min 6.0mm)",
+                        text = "• Up to 200g: Min 2.0 mm (Small packs)\n• 200g to 500g: Min 4.0 mm (Medium boxes)\n• Above 500g: Min 6.0 mm (Large family packs)",
                         style = MaterialTheme.typography.bodySmall.copy(
                             fontWeight = AppFontWeights.Body,
-                            fontSize = 10.sp,
-                            color = Color(0xFF3B82F6)
+                            fontSize = 11.sp,
+                            color = Color(0xFF1E40AF)
                         )
                     )
                 }
@@ -397,7 +420,7 @@ fun PenaltyEstimatorCard() {
             when (offenseType) {
                 0 -> "₹ 25,000 (Section 36(1) First Offense)"
                 1 -> "₹ 50,000 (Section 36(1) Second Offense)"
-                else -> "₹ 1,00,000 + Imprisonment up to 1 Year (Section 36(2) Repeated)"
+                else -> "₹ 1,00,000 + Imprisonment up to 1 Year (Section 36(2) Repeated Offense)"
             }
         }
     }
@@ -427,13 +450,13 @@ fun PenaltyEstimatorCard() {
                 Spacer(modifier = Modifier.width(10.dp))
                 Column {
                     Text(
-                        text = "Section 36 Penalty Estimator",
+                        text = "Section 36 Penalty & Fine Estimator",
                         style = MaterialTheme.typography.titleMedium.copy(
                             fontWeight = AppFontWeights.Header
                         )
                     )
                     Text(
-                        text = "Legal Metrology Act, 2009 Offense Provisions",
+                        text = "Legal Metrology Act, 2009: Fines for missing MRP, wrong weight, smudged dates, or overcharging.",
                         style = MaterialTheme.typography.bodySmall.copy(
                             fontWeight = AppFontWeights.Body,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -454,7 +477,7 @@ fun PenaltyEstimatorCard() {
                     onClick = { offenseType = 0 },
                     label = {
                         Text(
-                            "1st Offense",
+                            "1st Offense (First Time)",
                             fontWeight = if (offenseType == 0) AppFontWeights.Subheader else AppFontWeights.Body
                         )
                     }
@@ -464,7 +487,7 @@ fun PenaltyEstimatorCard() {
                     onClick = { offenseType = 1 },
                     label = {
                         Text(
-                            "2nd Offense",
+                            "2nd Offense (Second Time)",
                             fontWeight = if (offenseType == 1) AppFontWeights.Subheader else AppFontWeights.Body
                         )
                     }
@@ -474,7 +497,7 @@ fun PenaltyEstimatorCard() {
                     onClick = { offenseType = 2 },
                     label = {
                         Text(
-                            "Repeated",
+                            "Repeated (Repeat Offender)",
                             fontWeight = if (offenseType == 2) AppFontWeights.Subheader else AppFontWeights.Body
                         )
                     }
@@ -494,7 +517,7 @@ fun PenaltyEstimatorCard() {
                         .padding(12.dp)
                 ) {
                     Text(
-                        text = "Compounding / Penalty Amount:",
+                        text = "Statutory Fine / Compounding Amount:",
                         style = MaterialTheme.typography.labelSmall.copy(
                             color = Color(0xFF991B1B),
                             fontWeight = AppFontWeights.Header
@@ -505,6 +528,194 @@ fun PenaltyEstimatorCard() {
                         style = MaterialTheme.typography.bodyMedium.copy(
                             fontWeight = AppFontWeights.Header,
                             color = Color(0xFF991B1B)
+                        )
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "💡 Legal Protection: Selling non-standard packages without mandatory details or overcharging above printed MRP is illegal under Section 36.",
+                        style = MaterialTheme.typography.bodySmall.copy(
+                            color = Color(0xFF7F1D1D),
+                            fontSize = 11.sp
+                        )
+                    )
+                }
+            }
+        }
+    }
+}
+
+/**
+ * Isolated Component: Net Quantity Weight Accuracy & Tolerance (MPE)
+ * PCR 2011 First Schedule (Maximum Permissible Error)
+ * Tells consumers and inspectors whether a packet is illegally short-weight.
+ */
+@Composable
+fun NetQuantityToleranceCard() {
+    var declaredQtyInput by remember { mutableStateOf("500") }
+    var actualMeasuredInput by remember { mutableStateOf("488") }
+
+    val declared = declaredQtyInput.toDoubleOrNull() ?: 500.0
+    val actual = actualMeasuredInput.toDoubleOrNull() ?: 488.0
+
+    val mpeGrams by remember(declared) {
+        derivedStateOf {
+            when {
+                declared <= 50.0 -> declared * 0.09
+                declared <= 100.0 -> 4.5
+                declared <= 200.0 -> declared * 0.045
+                declared <= 300.0 -> 9.0
+                declared <= 500.0 -> declared * 0.03
+                declared <= 1000.0 -> 15.0
+                declared <= 10000.0 -> declared * 0.015
+                declared <= 15000.0 -> 150.0
+                else -> declared * 0.01
+            }
+        }
+    }
+
+    val minLegalWeight by remember(declared, mpeGrams) {
+        derivedStateOf { (declared - mpeGrams).coerceAtLeast(0.0) }
+    }
+    val shortfall by remember(declared, actual) {
+        derivedStateOf { declared - actual }
+    }
+    val isShortWeight by remember(actual, minLegalWeight) {
+        derivedStateOf { actual < minLegalWeight }
+    }
+
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(14.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant
+        ),
+        border = BorderStroke(1.dp, BorderLight)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(
+                    modifier = Modifier
+                        .size(36.dp)
+                        .background(MaterialTheme.colorScheme.primaryContainer, CircleShape),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(Icons.Default.Calculate, contentDescription = null, tint = MetrologyNavy)
+                }
+                Spacer(modifier = Modifier.width(10.dp))
+                Column {
+                    Text(
+                        text = "Net Weight Accuracy & Short-Weight Check",
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            fontWeight = AppFontWeights.Header
+                        )
+                    )
+                    Text(
+                        text = "First Schedule (MPE): Tells you if a packet has less weight than what's printed on the box.",
+                        style = MaterialTheme.typography.bodySmall.copy(
+                            fontWeight = AppFontWeights.Body,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(14.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                OutlinedTextField(
+                    value = declaredQtyInput,
+                    onValueChange = { declaredQtyInput = it },
+                    label = { Text("Printed Weight (g/ml)", fontWeight = AppFontWeights.Body) },
+                    placeholder = { Text("e.g. 500") },
+                    modifier = Modifier
+                        .weight(1f)
+                        .testTag("input_mpe_declared"),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                    shape = RoundedCornerShape(10.dp)
+                )
+
+                OutlinedTextField(
+                    value = actualMeasuredInput,
+                    onValueChange = { actualMeasuredInput = it },
+                    label = { Text("Actual Weight on Scale", fontWeight = AppFontWeights.Body) },
+                    placeholder = { Text("e.g. 488") },
+                    modifier = Modifier
+                        .weight(1f)
+                        .testTag("input_mpe_measured"),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                    shape = RoundedCornerShape(10.dp)
+                )
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Surface(
+                shape = RoundedCornerShape(10.dp),
+                color = if (isShortWeight) Color(0xFFFEF2F2) else CompliancePassContainer,
+                border = BorderStroke(1.dp, if (isShortWeight) Color(0xFFFECACA) else Color(0xFF86EFAC))
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(12.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = if (isShortWeight) "❌ ILLEGAL SHORT-WEIGHT DETECTED" else "✅ LEGAL & ACCURATE WEIGHT",
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    color = if (isShortWeight) Color(0xFF991B1B) else Color(0xFF0F5A07),
+                                    fontWeight = AppFontWeights.Header
+                                )
+                            )
+                            Text(
+                                text = "Minimum Legal Weight: ${String.format(java.util.Locale.US, "%.1f", minLegalWeight)} g",
+                                style = MaterialTheme.typography.titleMedium.copy(
+                                    fontWeight = AppFontWeights.Header,
+                                    color = if (isShortWeight) Color(0xFF991B1B) else Color(0xFF0F5A07)
+                                )
+                            )
+                        }
+
+                        Icon(
+                            imageVector = if (isShortWeight) Icons.Default.Warning else Icons.Default.CheckCircle,
+                            contentDescription = null,
+                            tint = if (isShortWeight) Color(0xFFDC2626) else CompliancePass,
+                            modifier = Modifier.size(28.dp)
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(6.dp))
+
+                    Text(
+                        text = if (isShortWeight) {
+                            "⚠️ Short by ${String.format(java.util.Locale.US, "%.1f", shortfall)}g! The law allows a maximum moisture/packing variation of only ${String.format(java.util.Locale.US, "%.1f", mpeGrams)}g. This pack is short-weight under Section 30."
+                        } else {
+                            "Deficit is ${String.format(java.util.Locale.US, "%.1f", shortfall.coerceAtLeast(0.0))}g, which is safely within the legal moisture allowance of ±${String.format(java.util.Locale.US, "%.1f", mpeGrams)}g."
+                        },
+                        style = MaterialTheme.typography.bodySmall.copy(
+                            color = if (isShortWeight) Color(0xFF7F1D1D) else Color(0xFF14532D),
+                            fontSize = 11.sp
+                        )
+                    )
+
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "💡 Everyday Tip: Companies cannot sell packets lighter than the minimum legal weight. If a packet is short-weight, the consumer is entitled to a replacement or refund.",
+                        style = MaterialTheme.typography.bodySmall.copy(
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            fontSize = 10.sp
                         )
                     )
                 }

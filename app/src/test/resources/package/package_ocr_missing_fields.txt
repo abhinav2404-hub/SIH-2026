@@ -1,0 +1,9 @@
+TEST CHIPS
+
+MRP ₹50
+NET QUANTITY 80 g
+
+INGREDIENTS:
+Potatoes, Vegetable Oil, Salt
+
+BATCH: CHIP-001

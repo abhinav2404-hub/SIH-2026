@@ -40,5 +40,12 @@ data class InspectionRecord(
     val chemicalSpecs: String = "",
     val quidDetails: String = "",
     val foplWarning: String = "",
-    val rawFullOcrText: String = ""
+    val rawFullOcrText: String = "",
+    val imageUri: String = "",
+    val pricePer100g: String = "",
+    val additivesAnalysis: String = "",
+    val healthConcerns: String = "",
+    val expiryStatus: String = "",
+    val confidenceLevel: String = "High",
+    val servingSize: String = ""
 )

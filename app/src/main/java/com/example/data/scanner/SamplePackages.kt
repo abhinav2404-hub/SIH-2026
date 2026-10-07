@@ -7,6 +7,139 @@ object SamplePackagesRepository {
 
     val samplePackages: List<SamplePackage> = listOf(
         SamplePackage(
+            id = "SAMPLE_KURKURE_MAIN",
+            title = "Kurkure",
+            brand = "PepsiCo India Holdings Pvt. Ltd.",
+            category = "Packaged Food & Namkeen (Proprietary Food 15.1)",
+            netQuantity = "82 g [(68 g + 14 g EXTRA)]",
+            declaredMrp = "₹ 20.00 (inclusive of all taxes)",
+            declaredUsp = "₹ 0.244 / g (₹ 24.39 / 100g calculated)",
+            countryOfOrigin = "India",
+            manufacturer = "PepsiCo India Holdings Pvt. Ltd., Village Channo, Sangrur, Punjab - 148026 / DLF Qutab Enclave, Phase-I, Gurugram, Haryana - 122002",
+            consumerCare = "Toll Free: 1800-22-4020, Email: consumer.feedback@pepsico.com, Address: Consumer Services Manager, PepsiCo India, PO Box 27, DLF Qutab Enclave, Gurugram, Haryana - 122002",
+            mfgDate = "30/08/2026",
+            expiryDate = "Best Before 4 Months from Manufacture (EXP: 28/12/2026)",
+            fontHeightMm = 3.2,
+            pdpAreaSqCm = 115.0,
+            expectedComplianceScore = 100,
+            expectedStatus = InspectionStatus.COMPLIANT,
+            rawLabelText = """
+                KURKURE - NAMKEEN (PROPRIETARY FOOD 15.1)
+                Net Quantity: 82 g [(68 g + 14 g EXTRA)]
+                MRP Rs. 20/- (INCL. OF ALL TAXES)
+                UNIT SALE PRICE: Rs. 0.244/- PER g (Rs. 24.39 / 100g)
+                MFD & USE BY: 30/08/26 & 28/12/26 | BATCH NO: 1.0/RP 300826 #
+                Country of Origin: India (Marketed by PepsiCo India Holdings Pvt. Ltd.)
+                Barcode: 8901491367219 (GS1 EAN-13 Barcode)
+                FSSAI Mkt. Lic. No: 10014064000435
+                Consumer Services Manager: P.O. BOX-27, DLF QUTAB ENCLAVE, PHASE-I, GURUGRAM - 122002, HARYANA | 1800 22 4020 | CONSUMER.FEEDBACK@PEPSICO.COM
+                Ingredients: Cereal Products (67%) (Rice Meal (44%), Corn Meal (23%)), Edible Vegetable Oil (Palmolein @ or Rice Bran #), Seasoning (Spices and Condiments, Iodised Salt, Sugar, Flavour (Natural and Nature Identical Flavouring Substances), Black Salt, Tomato Powder, Acidity Regulators (330, 296, 508), Colour (160c), Maltodextrin), Gram Meal (0.5%).
+                Nutritional Information (per 100g): Energy 554 kcal, Protein 6.0g, Carbohydrates 57.5g (Total Sugars 1.4g, Added Sugars 0.8g), Total Fat 33.4g (Saturated Fat 15.1g @ / 7.7g #, Trans Fat 0.1g), Sodium 694mg.
+                Per Serving (20g): Energy 111 kcal, Protein 1.2g, Carbohydrates 11.5g (Total Sugars 0.3g, Added Sugars 0.2g), Total Fat 6.7g (Saturated Fat 3.0g, Trans Fat 0.02g), Sodium 139mg.
+                Hidden / Undeclared Elements: Edible Vegetable Oil percentage (undisclosed on packaging), Seasoning blend ratio (undisclosed on packaging), Maltodextrin carrier starch quantity (undisclosed).
+                Dietary Precautions: High Sodium (694mg/100g) - limit daily intake for hypertension; Saturated Fat (15.1g/100g) - portion control advised; Calorie dense (554 kcal/100g); Allergen: May contain Wheat, Soy, Peanut traces.
+                QR Payload: 8901491367219 | FSSAI:10014064000435 | BATCH:1.0/RP 300826 # | MRP:20.00 | NET:82g
+            """.trimIndent(),
+            description = "Kurkure (PepsiCo India) 82g Pack (MRP ₹20) scanned via Barcode 8901491367219. Complete ingredient transparency, undisclosed percentages breakdown, INS additives (330, 296, 508, 160c), unit pricing (₹24.39/100g), and health precautions.",
+            violationSummary = "Statutory Verdict: 100% PASS. Valid EAN-13 barcode (8901491367219), declared MRP ₹20.00, dynamic USP ₹24.39/100g, FSSAI Lic. 10014064000435, QUID cereal disclosures, and vegetarian green logo.",
+            ingredients = "Cereal Products (67%) (Rice Meal (44%), Corn Meal (23%)), Edible Vegetable Oil (Palmolein @ or Rice Bran #) (percentage not disclosed on package), Seasoning (percentage not disclosed on package) (Spices & Condiments, Iodised Salt, Sugar, Flavour [Natural & Nature Identical Flavouring Substances], Black Salt, Tomato Powder, Acidity Regulators [INS 330, INS 296, INS 508], Colour [INS 160c], Maltodextrin), Gram Meal (0.5%)",
+            nutritionalInfo = "Per 100g: Energy 554 kcal, Protein 6.0g, Carbohydrates 57.5g (Total Sugars 1.4g, Added Sugars 0.8g), Total Fat 33.4g (Saturated Fat 15.1g @ / 7.7g #, Trans Fat 0.1g), Sodium 694mg | Per Serving (20g): Energy 111 kcal, Protein 1.2g, Carbs 11.5g, Total Fat 6.7g, Sodium 139mg",
+            allergens = "Contains Wheat and Soy ingredients. May contain traces of Milk and Peanuts.",
+            batchNo = "1.0/RP 300826 #",
+            licenseNo = "FSSAI Mkt. Lic. No. 10014064000435 • GS1 EAN-13: 8901491367219",
+            qrCodeData = "GS1 EAN-13: 8901491367219 | FSSAI: 10014064000435 | Brand: Kurkure (PepsiCo) | Batch: 1.0/RP 300826 # | MRP: ₹20.00 | Net: 82g",
+            chemicalSpecs = "Moisture: 1.5% (Limit <= 3.0%) • Peroxide Value: 2.6 meq/kg • Free Fatty Acids: 0.24% • Preservatives within FSSAI Schedule limits [PASS]",
+            quidDetails = "Cereal Products: 67% (Rice Meal 44%, Corn Meal 23%) • Gram Meal: 0.5% (Explicitly Disclosed) • Edible Vegetable Oil: Percentage not disclosed on package • Seasoning Mix: Percentage not disclosed on package • Maltodextrin: Quantity not disclosed on package",
+            foplWarning = "🟡 High Saturated Fat (15.1g/100g @ Palmolein) • 🟡 High Sodium Concern (694mg/100g) • 🟢 Added Sugar: Low (0.8g/100g) • 🟢 Trans Fat: Low (0.1g/100g)"
+        ),
+        SamplePackage(
+            id = "SAMPLE_KURKURE_MASALA_MUNCH",
+            title = "Kurkure Masala Munch Namkeen (19.7g / ₹5 Pack)",
+            brand = "PepsiCo India Holdings Pvt. Ltd.",
+            category = "Packaged Food & Namkeen (Proprietary Food 15.1)",
+            netQuantity = "19.7 g [(12 g + 6 g EXTRA) + 1.7 g]",
+            declaredMrp = "₹ 5.00 (inclusive of all taxes)",
+            declaredUsp = "₹ 0.25 / g (₹ 25.38 / 100g calculated)",
+            countryOfOrigin = "India",
+            manufacturer = "PepsiCo India Holdings Pvt. Ltd., Village Channo, Patiala-Sangrur Road, P.O. Bhawanigarh, Distt. Sangrur, Punjab - 148026 / DLF Qutab Enclave, Gurugram, Haryana - 122002",
+            consumerCare = "Toll Free: 1800-22-4020, Email: consumer.feedback@pepsico.com, Address: Consumer Services Manager, PepsiCo India, PO Box 27, DLF Qutab Enclave, Gurugram, Haryana - 122002",
+            mfgDate = "30/08/2026",
+            expiryDate = "Best Before 4 Months from Manufacture (EXP: 28/12/2026)",
+            fontHeightMm = 2.4,
+            pdpAreaSqCm = 48.0,
+            expectedComplianceScore = 100,
+            expectedStatus = InspectionStatus.COMPLIANT,
+            rawLabelText = """
+                KURKURE MASALA MUNCH - NAMKEEN (PROPRIETARY FOOD 15.1)
+                Net Quantity: 19.7 g [(12 g + 6 g EXTRA) + 1.7 g]
+                MRP Rs. 5/- (INCL. OF ALL TAXES)
+                UNIT SALE PRICE: Rs. 0.25/- PER g (Rs. 25.38 / 100g)
+                MFD & USE BY: 30/08/26 & 28/12/26 | BATCH NO: 1.0/RP 300826 #
+                Country of Origin: India (Marketed by PepsiCo India Holdings Pvt. Ltd.)
+                Barcode: 8901491367219 (GS1 EAN-13 Barcode)
+                FSSAI Mkt. Lic. No: 10014064000435
+                Consumer Services Manager: P.O. BOX-27, DLF QUTAB ENCLAVE, PHASE-I, GURUGRAM - 122002, HARYANA | 1800 22 4020 | CONSUMER.FEEDBACK@PEPSICO.COM
+                Ingredients: Cereal Products (67%) (Rice Meal (44%), Corn Meal (23%)), Edible Vegetable Oil (Palmolein @ or Rice Bran #), Seasoning (Spices and Condiments, Iodised Salt, Sugar, Flavour (Natural and Nature Identical Flavouring Substances), Black Salt, Tomato Powder, Acidity Regulators (330, 296, 508), Colour (160c), Maltodextrin), Gram Meal (0.5%).
+                Nutritional Information (per 100g): Energy 554 kcal, Protein 6.0g, Carbohydrates 57.5g (Total Sugars 1.4g, Added Sugars 0.8g), Total Fat 33.4g (Saturated Fat 15.1g @ / 7.7g #, Trans Fat 0.1g), Sodium 694mg.
+                Per Serving (20g): Energy 111 kcal, Protein 1.2g, Carbohydrates 11.5g (Total Sugars 0.3g, Added Sugars 0.2g), Total Fat 6.7g (Saturated Fat 3.0g, Trans Fat 0.02g), Sodium 139mg.
+                Hidden / Undeclared Elements: Edible Vegetable Oil percentage (undisclosed on packaging), Seasoning blend percentage (undisclosed on packaging), Maltodextrin carrier starch quantity (undisclosed).
+                Dietary Precautions: High Sodium (694mg/100g) - limit daily intake for hypertension; Saturated Fat (15.1g/100g) - portion control advised; Calorie dense (554 kcal/100g); Allergen: May contain Wheat, Soy, Peanut traces.
+                QR Payload: 8901491367219 | FSSAI:10014064000435 | BATCH:1.0/RP 300826 # | MRP:5.00 | NET:19.7g
+            """.trimIndent(),
+            description = "Kurkure Masala Munch (PepsiCo India) 19.7g Pack (₹5) scanned via Barcode 8901491367219. Complete ingredient transparency, undisclosed percentages breakdown, INS additives (330, 296, 508, 160c), exact nutrition, and health precautions.",
+            violationSummary = "Statutory Verdict: 100% PASS. Valid EAN-13 barcode (8901491367219), declared MRP ₹5.00, dynamic USP ₹25.38/100g, FSSAI Lic. 10014064000435, QUID cereal disclosures, and vegetarian green logo.",
+            ingredients = "Cereal Products (67%) (Rice Meal (44%), Corn Meal (23%)), Edible Vegetable Oil (Palmolein @ or Rice Bran #) (percentage not disclosed on package), Seasoning (percentage not disclosed on package) (Spices & Condiments, Iodised Salt, Sugar, Flavour [Natural & Nature Identical Flavouring Substances], Black Salt, Tomato Powder, Acidity Regulators [INS 330, INS 296, INS 508], Colour [INS 160c], Maltodextrin), Gram Meal (0.5%)",
+            nutritionalInfo = "Per 100g: Energy 554 kcal, Protein 6.0g, Carbohydrates 57.5g (Total Sugars 1.4g, Added Sugars 0.8g), Total Fat 33.4g (Saturated Fat 15.1g @ / 7.7g #, Trans Fat 0.1g), Sodium 694mg | Per Serving (20g): Energy 111 kcal, Protein 1.2g, Carbs 11.5g, Total Fat 6.7g, Sodium 139mg",
+            allergens = "Contains Wheat and Soy ingredients. May contain traces of Milk and Peanuts.",
+            batchNo = "1.0/RP 300826 #",
+            licenseNo = "FSSAI Mkt. Lic. No. 10014064000435 • GS1 EAN-13: 8901491367219",
+            qrCodeData = "GS1 EAN-13: 8901491367219 | FSSAI: 10014064000435 | Brand: Kurkure (PepsiCo) | Batch: 1.0/RP 300826 # | MRP: ₹5.00 | Net: 19.7g",
+            chemicalSpecs = "Moisture: 1.5% (Limit <= 3.0%) • Peroxide Value: 2.6 meq/kg • Free Fatty Acids: 0.24% • Preservatives within FSSAI Schedule limits [PASS]",
+            quidDetails = "Cereal Products: 67% (Rice Meal 44%, Corn Meal 23%) • Gram Meal: 0.5% (Explicitly Disclosed) • Edible Vegetable Oil: Percentage not disclosed on package • Seasoning Mix: Percentage not disclosed on package • Maltodextrin: Quantity not disclosed on package",
+            foplWarning = "🟡 High Saturated Fat (15.1g/100g @ Palmolein) • 🟡 High Sodium Concern (694mg/100g) • 🟢 Added Sugar: Low (0.8g/100g) • 🟢 Trans Fat: Low (0.1g/100g)"
+        ),
+        SamplePackage(
+            id = "SAMPLE_KURKURE_MRP20",
+            title = "Kurkure Masala Munch Family Pack (78g / ₹20)",
+            brand = "PepsiCo India Holdings Pvt. Ltd.",
+            category = "Packaged Food & Namkeen (Proprietary Food 15.1)",
+            netQuantity = "78 g",
+            declaredMrp = "₹ 20.00 (inclusive of all taxes)",
+            declaredUsp = "₹ 0.256 / g (₹ 25.64 / 100g calculated)",
+            countryOfOrigin = "India",
+            manufacturer = "PepsiCo India Holdings Pvt. Ltd., Village Channo, Sangrur, Punjab - 148026 / DLF Qutab Enclave, Gurugram, Haryana - 122002",
+            consumerCare = "Toll Free: 1800-22-4020, Email: consumer.feedback@pepsico.com, Address: Consumer Services Manager, PepsiCo India, PO Box 27, DLF Qutab Enclave, Gurugram, Haryana - 122002",
+            mfgDate = "30/08/2026",
+            expiryDate = "Best Before 4 Months from Manufacture (EXP: 28/12/2026)",
+            fontHeightMm = 3.0,
+            pdpAreaSqCm = 110.0,
+            expectedComplianceScore = 100,
+            expectedStatus = InspectionStatus.COMPLIANT,
+            rawLabelText = """
+                KURKURE MASALA MUNCH - FAMILY PACK (MRP ₹20)
+                Net Quantity: 78 g
+                MRP Rs. 20/- (INCL. OF ALL TAXES)
+                UNIT SALE PRICE: Rs. 0.256/- PER g (Rs. 25.64 / 100g)
+                MFD & USE BY: 30/08/26 & 28/12/26 | BATCH NO: 2.0/RP 300826 #
+                Country of Origin: India | Barcode: 8901491367219
+                FSSAI Mkt. Lic. No: 10014064000435 | Consumer Helpline: 1800 22 4020
+                Ingredients: Cereal Products (67%) (Rice Meal (44%), Corn Meal (23%)), Edible Vegetable Oil (Palmolein @ or Rice Bran #), Seasoning (Spices and Condiments, Iodised Salt, Sugar, Flavour (Natural and Nature Identical Flavouring Substances), Black Salt, Tomato Powder, Acidity Regulators [330, 296, 508], Colour [160c], Maltodextrin), Gram Meal (0.5%).
+                Nutritional Information (per 100g): Energy 554 kcal, Protein 6.0g, Carbohydrates 57.5g (Total Sugars 1.4g, Added Sugars 0.8g), Total Fat 33.4g (Saturated Fat 15.1g @ / 7.7g #, Trans Fat 0.1g), Sodium 694mg.
+                Health Precautions: High Sodium (694mg/100g) & Saturated Fat (15.1g/100g) - portion control advised.
+            """.trimIndent(),
+            description = "Kurkure Masala Munch ₹20 Family Pack (78g) with Barcode 8901491367219. Detailed hidden ingredient analysis, INS additives, unit pricing ₹25.64/100g, and dietary precautions.",
+            violationSummary = "Statutory Verdict: 100% PASS. Valid EAN-13 barcode (8901491367219), declared MRP ₹20.00, dynamic USP ₹25.64/100g, FSSAI Lic. 10014064000435.",
+            ingredients = "Cereal Products (67%) (Rice Meal (44%), Corn Meal (23%)), Edible Vegetable Oil (Palmolein @ or Rice Bran #) (percentage not disclosed on package), Seasoning (percentage not disclosed on package) (Spices and Condiments, Iodised Salt, Sugar, Flavour (Natural and Nature Identical Flavouring Substances), Black Salt, Tomato Powder, Acidity Regulators [INS 330, INS 296, INS 508], Colour [INS 160c], Maltodextrin), Gram Meal (0.5%)",
+            nutritionalInfo = "Per 100g: Energy 554 kcal, Protein 6.0g, Carbohydrates 57.5g (Total Sugars 1.4g, Added Sugars 0.8g), Total Fat 33.4g (Saturated Fat 15.1g @ / 7.7g #, Trans Fat 0.1g), Sodium 694mg | Per Serving (20g): Energy 111 kcal, Protein 1.2g, Carbs 11.5g, Total Fat 6.7g, Sodium 139mg",
+            allergens = "Contains Wheat and Soy ingredients. May contain traces of Milk and Peanuts.",
+            batchNo = "2.0/RP 300826 #",
+            licenseNo = "FSSAI Mkt. Lic. No. 10014064000435 • GS1 EAN-13: 8901491367219",
+            qrCodeData = "GS1 EAN-13: 8901491367219 | FSSAI: 10014064000435 | Brand: Kurkure (PepsiCo) | MRP: ₹20.00 | Net: 78g",
+            chemicalSpecs = "Moisture: 1.5% (Limit <= 3.0%) • Peroxide Value: 2.6 meq/kg • Free Fatty Acids: 0.24% [PASS]",
+            quidDetails = "Cereal Products: 67% (Rice Meal 44%, Corn Meal 23%) • Gram Meal: 0.5% (Explicitly Disclosed) • Edible Vegetable Oil: Percentage not disclosed on package • Seasoning Mix: Percentage not disclosed on package",
+            foplWarning = "🟡 High Saturated Fat (15.1g/100g @ Palmolein) • 🟡 High Sodium Concern (694mg/100g) • 🟢 Added Sugar: Low (0.8g/100g) • 🟢 Trans Fat: Low (0.1g/100g)"
+        ),
+        SamplePackage(
             id = "SAMPLE_MUSTARD_OIL",
             title = "Shri Krishna Pure Kachi Ghani Mustard Oil (1 Litre / 910g)",
             brand = "KrishiVeda Agro Industries Pvt. Ltd.",

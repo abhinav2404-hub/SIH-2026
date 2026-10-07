@@ -1,0 +1,40 @@
+package com.example.data.local
+
+import androidx.room.Entity
+import androidx.room.ForeignKey
+import androidx.room.Index
+import androidx.room.PrimaryKey
+
+/**
+ * Room database entity representing a detected rule violation tied to an inspection scan.
+ */
+@Entity(
+    tableName = "violations",
+    foreignKeys = [
+        ForeignKey(
+            entity = ScanEntity::class,
+            parentColumns = ["scanId"],
+            childColumns = ["scanId"],
+            onDelete = ForeignKey.CASCADE
+        )
+    ],
+    indices = [
+        Index(value = ["scanId"]),
+        Index(value = ["ruleId"]),
+        Index(value = ["severity"])
+    ]
+)
+data class ViolationEntity(
+    @PrimaryKey
+    val violationId: String,
+    val scanId: String,
+    val ruleId: String,
+    val ruleName: String,
+    val severity: String = "MAJOR", // CRITICAL, MAJOR, MINOR, WARNING
+    val detectedValue: String = "",
+    val requiredValue: String = "",
+    val evidenceSnippet: String = "",
+    val reason: String = "",
+    val penaltyClause: String = "",
+    val status: String = "CONFIRMED" // CONFIRMED, DISMISSED, UNDER_APPEAL
+)

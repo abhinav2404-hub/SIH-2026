@@ -1,0 +1,5 @@
+{
+  "declaration": "BEST BEFORE: 4 MONTHS FROM PACKAGING",
+  "expectedIsExplicitExpiryDate": false,
+  "expectedNote": "Best Before period declaration, not printed fixed expiry date"
+}

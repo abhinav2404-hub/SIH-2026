@@ -23,6 +23,11 @@ import com.example.ui.history.InspectionHistoryScreen
 import com.example.ui.scanner.AnalysisResultScreen
 import com.example.ui.scanner.CameraScreen
 import com.example.ui.scanner.ScannerScreen
+import com.example.ui.diagnostics.SyntheticTestsScreen
+import com.example.ui.health.SystemHealthScreen
+import com.example.ui.onboarding.OnboardingScreen
+import com.example.ui.settings.SettingsScreen
+import com.example.ui.sync.OfflineQueueScreen
 import com.example.ui.theme.LegalMetrologyTheme
 import com.example.ui.tools.LegalMetrologyToolsScreen
 import com.example.ui.transparency.FoodTransparencyScreen
@@ -59,6 +64,7 @@ fun LegalMetrologyApp(viewModel: MainViewModel) {
     when (currentScreen) {
         AppScreen.LOGIN -> LoginScreen(viewModel = viewModel)
         AppScreen.OTP_VERIFY -> OtpVerificationScreen(viewModel = viewModel)
+        AppScreen.ONBOARDING -> OnboardingScreen(onFinish = { viewModel.navigateTo(AppScreen.DASHBOARD) })
         AppScreen.DASHBOARD -> DashboardScreen(viewModel = viewModel)
         AppScreen.SCANNER -> ScannerScreen(viewModel = viewModel)
         AppScreen.CAMERA -> CameraScreen(viewModel = viewModel)
@@ -68,6 +74,10 @@ fun LegalMetrologyApp(viewModel: MainViewModel) {
         AppScreen.RULE_GUIDE -> LegalMetrologyGuideScreen(viewModel = viewModel)
         AppScreen.HELP_SEARCH -> LegalMetrologyHelpScreen(viewModel = viewModel)
         AppScreen.FOOD_TRANSPARENCY -> FoodTransparencyScreen(viewModel = viewModel)
+        AppScreen.OFFLINE_QUEUE -> OfflineQueueScreen(viewModel = viewModel, onBack = { viewModel.navigateTo(AppScreen.DASHBOARD) })
+        AppScreen.SYSTEM_HEALTH -> SystemHealthScreen(viewModel = viewModel, onBack = { viewModel.navigateTo(AppScreen.DASHBOARD) })
+        AppScreen.SYNTHETIC_TESTS -> SyntheticTestsScreen(viewModel = viewModel, onBack = { viewModel.navigateTo(AppScreen.DASHBOARD) })
+        AppScreen.SETTINGS -> SettingsScreen(viewModel = viewModel, onBack = { viewModel.navigateTo(AppScreen.DASHBOARD) })
         else -> DashboardScreen(viewModel = viewModel)
     }
 }

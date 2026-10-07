@@ -33,13 +33,13 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
-import androidx.compose.material.icons.filled.Assignment
+import androidx.compose.material.icons.automirrored.filled.Assignment
+import androidx.compose.material.icons.automirrored.filled.FactCheck
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Eco
-import androidx.compose.material.icons.filled.FactCheck
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Gavel
 import androidx.compose.material.icons.filled.HealthAndSafety
@@ -164,36 +164,36 @@ fun FoodTransparencyScreen(viewModel: MainViewModel) {
                 Tab(
                     selected = selectedTab == 0,
                     onClick = { selectedTab = 0 },
-                    text = { Text("7 Core Demands", fontWeight = AppFontWeights.Header, fontSize = 12.sp) },
-                    icon = { Icon(Icons.Default.FactCheck, contentDescription = null, modifier = Modifier.size(16.dp)) },
+                    text = { Text("7 Food Rights (Demands)", fontWeight = AppFontWeights.Header, fontSize = 12.sp) },
+                    icon = { Icon(Icons.AutoMirrored.Filled.FactCheck, contentDescription = "7 Food Rights & Consumer Demands", modifier = Modifier.size(16.dp)) },
                     modifier = Modifier.testTag("tab_core_demands")
                 )
                 Tab(
                     selected = selectedTab == 1,
                     onClick = { selectedTab = 1 },
-                    text = { Text("QUID Rules & Calc", fontWeight = AppFontWeights.Header, fontSize = 12.sp) },
-                    icon = { Icon(Icons.Default.Percent, contentDescription = null, modifier = Modifier.size(16.dp)) },
+                    text = { Text("Real Ingredient % (QUID)", fontWeight = AppFontWeights.Header, fontSize = 12.sp) },
+                    icon = { Icon(Icons.Default.Percent, contentDescription = "Real Ingredient Percentage Calculator", modifier = Modifier.size(16.dp)) },
                     modifier = Modifier.testTag("tab_quid_calc")
                 )
                 Tab(
                     selected = selectedTab == 2,
                     onClick = { selectedTab = 2 },
-                    text = { Text("Palm Oil History", fontWeight = AppFontWeights.Header, fontSize = 12.sp) },
-                    icon = { Icon(Icons.Default.HistoryEdu, contentDescription = null, modifier = Modifier.size(16.dp)) },
+                    text = { Text("Palm Oil Facts & Health", fontWeight = AppFontWeights.Header, fontSize = 12.sp) },
+                    icon = { Icon(Icons.Default.HistoryEdu, contentDescription = "Palm Oil Health & Origin Guide", modifier = Modifier.size(16.dp)) },
                     modifier = Modifier.testTag("tab_palm_oil_history")
                 )
                 Tab(
                     selected = selectedTab == 3,
                     onClick = { selectedTab = 3 },
-                    text = { Text("Oil Safety Guide", fontWeight = AppFontWeights.Header, fontSize = 12.sp) },
-                    icon = { Icon(Icons.Default.Opacity, contentDescription = null, modifier = Modifier.size(16.dp)) },
+                    text = { Text("Safe Cooking Oils Guide", fontWeight = AppFontWeights.Header, fontSize = 12.sp) },
+                    icon = { Icon(Icons.Default.Opacity, contentDescription = "Cooking Oil Purity & Adulteration Guide", modifier = Modifier.size(16.dp)) },
                     modifier = Modifier.testTag("tab_oil_safety")
                 )
                 Tab(
                     selected = selectedTab == 4,
                     onClick = { selectedTab = 4 },
-                    text = { Text("Citizen Petition", fontWeight = AppFontWeights.Header, fontSize = 12.sp) },
-                    icon = { Icon(Icons.Default.Assignment, contentDescription = null, modifier = Modifier.size(16.dp)) },
+                    text = { Text("Citizen Petition & Letter", fontWeight = AppFontWeights.Header, fontSize = 12.sp) },
+                    icon = { Icon(Icons.AutoMirrored.Filled.Assignment, contentDescription = "Citizen Petition to Ministry", modifier = Modifier.size(16.dp)) },
                     modifier = Modifier.testTag("tab_petition_draft")
                 )
             }
@@ -314,7 +314,7 @@ private fun CoreDemandsTab() {
                                 .background(AgriForestGreen, CircleShape),
                             contentAlignment = Alignment.Center
                         ) {
-                            Icon(Icons.Default.FactCheck, contentDescription = null, tint = Color.White)
+                            Icon(Icons.AutoMirrored.Filled.FactCheck, contentDescription = "Consumer Charter", tint = Color.White)
                         }
                         Spacer(modifier = Modifier.width(12.dp))
                         Column {

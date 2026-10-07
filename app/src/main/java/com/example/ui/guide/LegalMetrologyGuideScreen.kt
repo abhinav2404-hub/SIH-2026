@@ -62,8 +62,8 @@ fun LegalMetrologyGuideScreen(viewModel: MainViewModel) {
     Scaffold(
         topBar = {
             AppTopBar(
-                title = "PCR 2011 & Legal Metrology Rules",
-                subtitle = "Room Database Rule Schema (6, 8, 9, 18, 36)",
+                title = "Packaging Rules & Law Handbook",
+                subtitle = "Plain-Language Guide to Legal Metrology (PCR 2011)",
                 showBackButton = true,
                 onBackClick = { viewModel.navigateTo(AppScreen.DASHBOARD) },
                 currentUser = currentUser
@@ -117,7 +117,7 @@ fun LegalMetrologyGuideScreen(viewModel: MainViewModel) {
                                     )
                                     Spacer(modifier = Modifier.width(6.dp))
                                     Text(
-                                        "Room DB Rules (6, 8, 9)",
+                                        "Rules Handbook (6, 8, 9)",
                                         fontSize = 12.sp,
                                         fontWeight = FontWeight.Bold,
                                         color = AgriForestGreen
@@ -138,7 +138,7 @@ fun LegalMetrologyGuideScreen(viewModel: MainViewModel) {
                                     )
                                     Spacer(modifier = Modifier.width(6.dp))
                                     Text(
-                                        "AI Search Grounding Help",
+                                        "Ask AI Helper & FAQ",
                                         fontSize = 12.sp,
                                         fontWeight = FontWeight.Medium,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -184,7 +184,7 @@ fun LegalMetrologyGuideScreen(viewModel: MainViewModel) {
                         Spacer(modifier = Modifier.height(8.dp))
 
                         Text(
-                            text = "Statutory compliance criteria stored in local Room database engine for automated label inspection, OCR validation & violation indexing.",
+                            text = "Official standards under the Legal Metrology Act, 2009. Saved directly on your phone so you can verify package rules anytime, even offline without internet.",
                             style = MaterialTheme.typography.bodySmall.copy(
                                 color = Color(0xFFD8F3DC),
                                 fontSize = 11.sp,
@@ -195,10 +195,10 @@ fun LegalMetrologyGuideScreen(viewModel: MainViewModel) {
                 }
             }
 
-            // Room Stored Metrology Rules (6, 8, 9, 18, 36)
+            // Stored Metrology Rules (6, 8, 9, 18, 36)
             item {
                 Text(
-                    text = "Statutory Compliance Rules (${dbRules.size} Stored in Room DB)",
+                    text = "Core Packaging Laws (${dbRules.size} Official Rules • Works Offline)",
                     style = MaterialTheme.typography.titleMedium.copy(
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface
